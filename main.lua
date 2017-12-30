@@ -156,10 +156,10 @@ function main(update_progress_func)
 
     if (options.modetype.value == 1) then -- loose
       if startpos > 0 and startpos < endpos and startpos < lastframe then
-        selected_sample.loop_start = startpos
+        selected_sample.loop_start = math.floor(startpos + 0.5)
       end
       if endpos <= lastframe and endpos > startpos and endpos > 0 then
-        selected_sample.loop_end = endpos
+        selected_sample.loop_end = math.floor(endpos + 0.5)
       end
       if endpos > lastframe then
         endpos = lastframe
@@ -186,8 +186,8 @@ function main(update_progress_func)
     end
     if (options.modetype.value == 2) then -- pitch
       if (startpos > 0) and ((startpos + targetframes) < lastframe) then
-        selected_sample.loop_start = startpos
-        selected_sample.loop_end = startpos + targetframes
+        selected_sample.loop_start = math.floor(startpos + 0.5)
+        selected_sample.loop_end = math.floor(startpos + targetframes + 0.5)
       end
       if (startpos < 0) then
         startpos = 1
