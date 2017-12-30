@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ScriptingToolPreferences doc_version="0">
+  <modetype>2</modetype>
+  <startvel>10</startvel>
+  <thenote>40</thenote>
+  <endvel>20</endvel>
+  <velocity>128</velocity>
+  <minframes>1.0</minframes>
+  <maxvelocity>512</maxvelocity>
+</ScriptingToolPreferences>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RenoiseScriptingTool>
+  <ApiVersion>5.0</ApiVersion>
+  <Version>1.0</Version>
+  <Id>com.renoise.ExampleModLoopTool</Id>
+  <Author>artaslove [bonafide@martica.org]</Author>
+  <Category>Tool</Category>
+  <Name>ModLoop Example</Name>
+  <Description>Example ModLoop Tool.</Description>
+</RenoiseScriptingTool>
