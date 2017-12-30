@@ -236,6 +236,7 @@ function main(update_progress_func)
     coroutine.yield()
     lastsample = rsong.selected_sample_index
   end
+  gui.start_stop_process()
 end
 
 function init_tool()
