@@ -329,7 +329,7 @@ function create_gui()
             max = options.maxvelocity.value,
             value = options.startvel.value,
             notifier = changesvel,
-            midi_mapping = "ModLoop:Looseoptions.startoptions.velocity"
+            midi_mapping = "ModLoop:LooseStartVelocity"
           }, 
           vb:text {
             id = "svel_text",
@@ -343,7 +343,7 @@ function create_gui()
             max = options.maxvelocity.value,
             value = options.endvel.value,
             notifier = changeevel,
-            midi_mapping = "ModLoop:Looseoptions.endoptions.velocity"
+            midi_mapping = "ModLoop:LooseEndVelocity"
           },
           vb:text {
             id = "evel_text",
@@ -366,11 +366,11 @@ function create_gui()
             max = options.maxvelocity.value,
             value = options.velocity.value,
             notifier = changevel,
-            midi_mapping = "ModLoop:Pitchoptions.velocity"
+            midi_mapping = "ModLoop:PitchVelocity"
           },
           vb:text {
             id = "vel_text",
-            text = "Pitch options.velocity: " .. tostring(options.velocity.value)
+            text = "Pitch Velocity: " .. tostring(options.velocity.value)
           },
           vb:slider {
             id = "pitch",
@@ -425,14 +425,14 @@ renoise.tool():add_midi_mapping{
 }
 
 renoise.tool():add_midi_mapping{
-  name = "ModLoop:Looseoptions.startoptions.velocity",
+  name = "ModLoop:LooseStartVelocity",
   invoke = function(midi_message)
     svel = (midi_message.int_value - 64) * (options.maxvelocity.value / 64)  
   end
 }
 
 renoise.tool():add_midi_mapping{
-  name = "ModLoop:Looseoptions.endoptions.velocity",
+  name = "ModLoop:LooseEndVelocity",
   invoke = function(midi_message)
     evel = (midi_message.int_value - 64) * (options.maxvelocity.value / 64)  
   end
@@ -446,7 +446,7 @@ renoise.tool():add_midi_mapping{
 }
 
 renoise.tool():add_midi_mapping{
-  name = "ModLoop:Pitchoptions.velocity",
+  name = "ModLoop:PitchVelocity",
   invoke = function(midi_message)
     options.velocity.value = (midi_message.int_value - 64) * (options.maxvelocity.value / 64)   
   end
