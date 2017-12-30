@@ -341,6 +341,7 @@ function create_gui()
           vb:switch {
             id = "mode",
             items = { "Loose", "Pitch" },
+            value = options.modetype.value,
             width = 256,
             height = 25,
             notifier = changemode,
