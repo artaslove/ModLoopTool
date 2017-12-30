@@ -135,6 +135,7 @@ sflip = false
 eflip = false
 vflip = false
 gui = nil
+direction = nil
 
 function main(update_progress_func)
   while rsong.transport.playing do
@@ -153,7 +154,7 @@ function main(update_progress_func)
     -- 1 - loose   - the start and end points move back and forth with unique velocities
     -- 2 - pitch   - the start and end points move together in order to create a pitch
     -- 3 - ?????
-
+  
     if (options.modetype.value == 1) then -- loose
       if startpos > 0 and startpos < endpos and startpos < lastframe then
         selected_sample.loop_start = math.floor(startpos + 0.5)
@@ -165,14 +166,41 @@ function main(update_progress_func)
         endpos = lastframe
         eflip = true
       end
+      if endpos < 1 then 
+        endpos = startpos + 1
+        eflip = true
+      end
       if startpos < 0  then
         startpos = 1
         sflip = true
       end
-      if (endpos - startpos) < options.minframes.value then
-        eflip = true
+      if startpos > lastframe then 
+        startpos = endpos - 1
         sflip = true
       end
+      if (endpos - startpos) < options.minframes.value then 
+        if startpos + options.minframes.value <= lastframe then
+          endpos = startpos + options.minframes.value
+        end
+        direction = options.startvel.value + options.endvel.value
+        if direction > 0 then 
+          if options.startvel.value > options.endvel.value then
+            sflip = true
+          else
+            eflip = true
+          end
+        elseif direction < 0 then 
+          if options.startvel.value < options.endvel.value then
+            sflip = true
+          else
+            eflip = true
+          end        
+        end
+        if direction == 0 then 
+          eflip = true
+          sflip = true
+        end
+      end   
       if (sflip == true) then
         options.startvel.value = options.startvel.value * -1
         sflip = false      
@@ -207,7 +235,7 @@ function main(update_progress_func)
     update_progress_func()
     coroutine.yield()
     lastsample = rsong.selected_sample_index
-  end     
+  end
 end
 
 function init_tool()
@@ -458,3 +486,4 @@ renoise.tool():add_midi_mapping{
     options.thenote.value = midi_message.int_value   
   end
 }
+
