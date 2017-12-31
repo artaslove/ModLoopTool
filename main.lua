@@ -265,6 +265,7 @@ end
 
 function create_gui()
   local loopmodes = {"OFF", "FORWARD", "REVERSE", "PING PONG"}
+  local directionstrings = {"---","-->","<--","<->"}
   local dialog, process
   local vb = renoise.ViewBuilder()
 
@@ -292,12 +293,12 @@ function create_gui()
   
   local function changesvel()
     options.startvel.value = vb.views.svel.value
-    vb.views.svel_text.text = "Loose Start velocity: " .. tostring(options.startvel.value) 
+    vb.views.svel_text.text = "Loose Start Velocity: " .. tostring(options.startvel.value) 
   end
   
   local function changeevel() 
     options.endvel.value = vb.views.evel.value
-    vb.views.evel_text.text = "Loose End velocity: " .. tostring(options.endvel.value)
+    vb.views.evel_text.text = "Loose End Velocity: " .. tostring(options.endvel.value)
   end
   
   local function changeloop()
@@ -309,6 +310,10 @@ function create_gui()
       process:stop()
       return
     end
+    local targetframesstring = ""
+    if options.modetype.value == 2 then
+      targetframesstring = string.format("Aiming for: %d", targetframes)
+    end
     vb.views.mode.value = options.modetype.value 
     vb.views.svel.value = options.startvel.value
     vb.views.evel.value = options.endvel.value
@@ -316,16 +321,24 @@ function create_gui()
     vb.views.vel.value = options.velocity.value
     vb.views.pitch.value = options.thenote.value
     vb.views.progress_text.text = string.format(
-    "%d <-> %d      Aiming for: %d", startpos, endpos, targetframes)
+    "%d %s %d    %s", startpos, directionstrings[selected_sample.loop_mode], endpos, targetframesstring)
   end
 
   local function start_stop_process(self)
     if (not process or not process:running()) then
       vb.views.start_button.text = "Stop"
-      process = ProcessSlicer(main, update_progress)
-      process:start()
+      nosample = true
+      init_tool()
+      if nosample == false then
+        process = ProcessSlicer(main, update_progress)
+        process:start()
+      else
+        vb.views.start_button.text = "Start"
+        vb.views.progress_text.text = ""
+      end 
     elseif (process and process:running()) then
       vb.views.start_button.text = "Start"
+      vb.views.progress_text.text = ""
       process:stop()
     end
   end
