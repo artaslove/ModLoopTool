@@ -8,14 +8,6 @@ This is an experiment to modify sample loop positions by bonafide@martica.org
 portions of this code for handling notes and frequencies, although slightly modified are from:
 https://github.com/MightyPirates/OpenComputers/blob/master-MC1.7.10/src/main/resources/assets/opencomputers/loot/openos/lib/note.lua
 
-ToDo:
-
-- possibly handle the pitch changes caused by high velocity loop directions
-- possibly copy a little bit of the sample buffer to make a judgement about zero crossings
-- glide back to note from loose mode
-- other ways of modifying the loop (random locations? octave slider? etc)
-- gracefully restore the previous loop points and loopmode on exit or selected_sample change
-
 ]]
 
 require "process_slicer"
@@ -374,7 +366,7 @@ function create_gui()
           }, 
           vb:text {
             id = "svel_text",
-            text = "Loose Start options.velocity: " .. tostring(options.startvel.value)
+            text = "Loose Start Velocity: " .. tostring(options.startvel.value)
           },
           vb:slider {
             id = "evel",
@@ -388,7 +380,7 @@ function create_gui()
           },
           vb:text {
             id = "evel_text",
-            text = "Loose End options.velocity: " .. tostring(options.endvel.value)
+            text = "Loose End Velocity: " .. tostring(options.endvel.value)
           },
           vb:switch {
             id = "ltype",
