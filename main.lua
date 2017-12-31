@@ -431,14 +431,14 @@ function create_gui()
       }
     }
   }
-  dialog = renoise.app():show_custom_dialog("ModLoop...", dialog_content)
+  dialog = renoise.app():show_custom_dialog("ModLoop v0.1", dialog_content)
   return {start_stop_process=start_stop_process}
 end
 
 renoise.tool().preferences = options
 
 renoise.tool():add_menu_entry{
-  name = "Main Menu:Tools:ModLoop...",
+  name = "Main Menu:Tools:ModLoop v0.1",
   invoke = function()
     init_tool()
     if (nosample == false) then
