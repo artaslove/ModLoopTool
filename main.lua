@@ -211,11 +211,13 @@ function main(update_progress_func)
         startpos = startpos + options.startvel.value
       else
         options.startvel.value = 0
+        startpos = selected_sample.loop_start
       end
       if options.endenable.value == true then
         endpos = endpos + options.endvel.value
       else
         options.endvel.value = 0
+        endpos = selected_sample.loop_end
       end
     end
     if (options.modetype.value == 2) then -- pitch
