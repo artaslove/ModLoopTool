@@ -244,7 +244,7 @@ end
 function init_tool()
   rsong = renoise.song()
   selected_sample = rsong.selected_sample
-  if (selected_sample ~= nil) then
+  if (rsong.selected_sample ~= nil) then
     nosample = false
     startpos = selected_sample.loop_start
     endpos = selected_sample.loop_end
