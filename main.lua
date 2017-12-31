@@ -462,14 +462,14 @@ renoise.tool():add_midi_mapping{
 renoise.tool():add_midi_mapping{
   name = "ModLoop:LooseStartVelocity",
   invoke = function(midi_message)
-    svel = (midi_message.int_value - 64) * (options.maxvelocity.value / 64)  
+    options.startvel.value = (midi_message.int_value - 64) * (options.maxvelocity.value / 64)  
   end
 }
 
 renoise.tool():add_midi_mapping{
   name = "ModLoop:LooseEndVelocity",
   invoke = function(midi_message)
-    evel = (midi_message.int_value - 64) * (options.maxvelocity.value / 64)  
+    options.endvel.value = (midi_message.int_value - 64) * (options.maxvelocity.value / 64)  
   end
 }
 
