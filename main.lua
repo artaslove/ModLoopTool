@@ -14,6 +14,7 @@ ToDo:
 - possibly copy a little bit of the sample buffer to make a judgement about zero crossings
 - glide back to note from loose mode
 - other ways of modifying the loop (random locations? octave slider? etc)
+- gracefully restore the previous loop points and loopmode on exit or selected_sample change
 
 ]]
 
@@ -136,9 +137,10 @@ eflip = false
 vflip = false
 gui = nil
 direction = nil
+nosample = true
 
 function main(update_progress_func)
-  while rsong.transport.playing do
+  while true do 
     if (lastsample ~= rsong.selected_sample_index) then
       selected_sample = rsong.selected_sample
       startpos = selected_sample.loop_start
@@ -242,10 +244,13 @@ end
 function init_tool()
   rsong = renoise.song()
   selected_sample = rsong.selected_sample
-  startpos = selected_sample.loop_start
-  endpos = selected_sample.loop_end
-  sample_rate = selected_sample.sample_buffer.sample_rate
-  lastsample = rsong.selected_sample_index
+  if (selected_sample ~= nil) then
+    nosample = false
+    startpos = selected_sample.loop_start
+    endpos = selected_sample.loop_end
+    sample_rate = selected_sample.sample_buffer.sample_rate
+    lastsample = rsong.selected_sample_index
+  end
 end
 
 function create_gui()
@@ -430,7 +435,9 @@ renoise.tool():add_menu_entry{
   name = "Main Menu:Tools:ModLoop...",
   invoke = function()
     init_tool()
-    gui = create_gui()
+    if (nosample == false) then
+      gui = create_gui()
+    end
   end
 }
 
