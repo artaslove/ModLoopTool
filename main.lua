@@ -141,6 +141,8 @@ nosample = true
 
 function main(update_progress_func)
   while true do 
+   if (rsong.selected_sample ~= nil) then
+      nosample = false
     if (lastsample ~= rsong.selected_sample_index) then
       selected_sample = rsong.selected_sample
       startpos = selected_sample.loop_start
@@ -237,6 +239,10 @@ function main(update_progress_func)
     update_progress_func()
     coroutine.yield()
     lastsample = rsong.selected_sample_index
+   else
+     nosample = true
+     break
+   end 
   end
   gui.start_stop_process()
 end
