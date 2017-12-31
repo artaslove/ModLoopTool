@@ -104,7 +104,9 @@ end
 local options = renoise.Document.create("ScriptingToolPreferences") {
   maxvelocity = 512,
   startvel = 10,
+  startenable = true,
   endvel = 20,
+  endenable = true,
   minframes = 1, 
   velocity = 128, 
   thenote = 48,
@@ -152,10 +154,10 @@ function main(update_progress_func)
     -- 3 - ?????
   
     if (options.modetype.value == 1) then -- loose
-      if startpos > 0 and startpos < endpos and startpos < lastframe then
+      if options.startenable.value == true and startpos > 0 and startpos < endpos and startpos < lastframe then
         selected_sample.loop_start = math.floor(startpos + 0.5)
       end
-      if endpos <= lastframe and endpos > startpos and endpos > 0 then
+      if options.endenable.value == true and endpos <= lastframe and endpos > startpos and endpos > 0 then
         selected_sample.loop_end = math.floor(endpos + 0.5)
       end
       if endpos > lastframe then
@@ -205,8 +207,16 @@ function main(update_progress_func)
         options.endvel.value = options.endvel.value * -1
         eflip = false      
       end
-      startpos = startpos + options.startvel.value
-      endpos = endpos + options.endvel.value
+      if options.startenable.value == true then
+        startpos = startpos + options.startvel.value
+      else
+        options.startvel.value = 0
+      end
+      if options.endenable.value == true then
+        endpos = endpos + options.endvel.value
+      else
+        options.endvel.value = 0
+      end
     end
     if (options.modetype.value == 2) then -- pitch
       if (startpos > 0) and ((startpos + targetframes) < lastframe) then
@@ -255,6 +265,14 @@ function create_gui()
   local loopmodes = {"OFF", "FORWARD", "REVERSE", "PING PONG"}
   local dialog, process
   local vb = renoise.ViewBuilder()
+
+  local function changesenable()
+    options.startenable.value = vb.views.senable.value
+  end
+  
+    local function changeeenable()
+    options.endenable.value = vb.views.eenable.value
+  end
 
   local function changemode()
     options.modetype.value = math.floor(vb.views.mode.value + 0.5)
@@ -339,7 +357,7 @@ function create_gui()
             width = 256,
             height = 25,
             notifier = start_stop_process,
-            midi_mapping = "ModLoop:toggle_start"
+            midi_mapping = "ModLoop:ToggleStart"
           },
           vb:switch {
             id = "mode",
@@ -348,36 +366,52 @@ function create_gui()
             width = 256,
             height = 25,
             notifier = changemode,
-            midi_mapping = "ModLoop:mode"
+            midi_mapping = "ModLoop:Mode"
           }
         }
       },   
       vb:horizontal_aligner { width = 300, mode = "center",
         vb:column {
-          vb:slider {
-            id = "svel",
-            width = 256,
-            height = 25,
-            min = (options.maxvelocity.value * -1),
-            max = options.maxvelocity.value,
-            value = options.startvel.value,
-            notifier = changesvel,
-            midi_mapping = "ModLoop:LooseStartVelocity"
-          }, 
+          vb:row {
+            vb:slider {
+              id = "svel",
+              width = 256,
+              height = 25,
+              min = (options.maxvelocity.value * -1),
+              max = options.maxvelocity.value,
+              value = options.startvel.value,
+              notifier = changesvel,
+              midi_mapping = "ModLoop:LooseStartVelocity"
+            },
+            vb:checkbox {
+              id = "senable",
+              value = options.startenable.value,
+              notifier = changesenable,
+              midi_mapping = "ModLoop:StartEnable"
+            },
+          },  
           vb:text {
-            id = "svel_text",
-            text = "Loose Start Velocity: " .. tostring(options.startvel.value)
+           id = "svel_text",
+           text = "Loose Start Velocity: " .. tostring(options.startvel.value)
           },
-          vb:slider {
-            id = "evel",
-            width = 256,
-            height = 25,
-            min = (options.maxvelocity.value * -1),
-            max = options.maxvelocity.value,
-            value = options.endvel.value,
-            notifier = changeevel,
-            midi_mapping = "ModLoop:LooseEndVelocity"
-          },
+          vb:row {
+            vb:slider {
+              id = "evel",
+              width = 256,
+              height = 25,
+              min = (options.maxvelocity.value * -1),
+              max = options.maxvelocity.value,
+              value = options.endvel.value,
+              notifier = changeevel,
+              midi_mapping = "ModLoop:LooseEndVelocity"
+            },
+            vb:checkbox {
+              id = "eenable",
+              value = options.endenable.value,
+              notifier = changeeenable,
+              midi_mapping = "ModLoop:EndEnable"
+            }
+          }, 
           vb:text {
             id = "evel_text",
             text = "Loose End Velocity: " .. tostring(options.endvel.value)
@@ -440,7 +474,7 @@ renoise.tool():add_menu_entry{
 }
 
 renoise.tool():add_midi_mapping{
-  name = "ModLoop:toggle_start",
+  name = "ModLoop:ToggleStart",
   invoke = function(midi_message)
     if midi_message.int_value == 127 or midi_message.int_value == 0 then
       gui.start_stop_process()
@@ -449,7 +483,7 @@ renoise.tool():add_midi_mapping{
 }
 
 renoise.tool():add_midi_mapping{
-  name = "ModLoop:mode",
+  name = "ModLoop:Mode",
   invoke = function(midi_message)
     if midi_message.int_value > 63 then
       options.modetype.value = 1
@@ -458,6 +492,29 @@ renoise.tool():add_midi_mapping{
     end
   end
 }
+
+renoise.tool():add_midi_mapping{
+  name = "ModLoop:StartEnable",
+  invoke = function(midi_message)
+    if midi_message.int_value > 63 then
+      options.startenable.value = true
+    else
+      options.startenable.value = false
+    end
+  end
+}
+
+renoise.tool():add_midi_mapping{
+  name = "ModLoop:EndEnable",
+  invoke = function(midi_message)
+    if midi_message.int_value > 63 then
+      options.endenable.value = true
+    else
+      options.endenable.value = false
+    end
+  end
+}
+
 
 renoise.tool():add_midi_mapping{
   name = "ModLoop:LooseStartVelocity",
