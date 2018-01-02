@@ -8,7 +8,7 @@ This is an experiment to modify sample loop positions by bonafide@martica.org
 portions of this code for handling notes and frequencies, although slightly modified are from:
 https://github.com/MightyPirates/OpenComputers/blob/master-MC1.7.10/src/main/resources/assets/opencomputers/loot/openos/lib/note.lua
 
-V0.20
+V0.22
 
 ToDo:
   - restoring sample properties on close
@@ -226,17 +226,21 @@ function main(update_progress_func)
           endpos = lastframe
           eflip = true
         end
-        if endpos < 1 then 
-          endpos = startpos + 1
-          eflip = true
-        end
         if startpos < 1  then
           startpos = 1
           sflip = true
         end
-        if startpos > lastframe then 
+        if endpos < 2 then
+          endpos = 2
+          eflip = true
+        end
+        if startpos > endpos then 
           startpos = endpos - 1
           sflip = true
+        end
+        if endpos < startpos then 
+          endpos = startpos + 1
+          eflip = true
         end
         if (endpos - startpos) < options.minframes.value then 
           --if options.collisiontype.value == 2 then -- bounce 2 -- this is broken please do not use
@@ -661,7 +665,7 @@ function create_gui()
     }
   }
  }  
- dialog = renoise.app():show_custom_dialog("ModLoop v0.21", dialog_content)
+ dialog = renoise.app():show_custom_dialog("ModLoop v0.22", dialog_content)
  return {start_stop_process=start_stop_process}
 end
 
@@ -670,7 +674,7 @@ options.collisiontype.value = 3
 
 
 renoise.tool():add_menu_entry{
-  name = "Main Menu:Tools:ModLoop v0.21",
+  name = "Main Menu:Tools:ModLoop v0.22",
   invoke = function()
     init_tool()
     if (nosample == false) then
