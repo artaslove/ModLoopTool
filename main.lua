@@ -14,7 +14,7 @@ ToDo:
   - restoring sample properties on close
   - additional modes of operation such as more choices for what to do in loose mode when a loop point hits a boundary
   - glide option for pitch 
-    - glide velocity
+    - glide speed
   - finer control over pitch in general
     - octave, cents
   - bitmaps 
@@ -24,8 +24,8 @@ ToDo:
 eventual goals
   - become aware of the highest and lowest current note(s), either in selected track of composition or currently playing, this enables:
     - better representation in the GUI of the actual note being played 
-    - not exceeding playback velocity
-    - fixing the pitch change with high velocities
+    - not exceeding playback speed
+    - fixing the pitch change with high spdocities
     - random mode
     - the option of using zero crossings
 
@@ -123,15 +123,15 @@ end
 -------------------------------------------------------------------------------------------------------------
 
 local options = renoise.Document.create("ScriptingToolPreferences") {
-  maxvelocity = 512,
-  maxmaxvelocity = 4096,
+  maxspeed = 512,
+  maxmaxspeed = 512,
   maxminframes = 2048,
-  startvel = 10,
+  startspd = 10,
   startenable = true,
-  endvel = 20,
+  endspd = 20,
   endenable = true,
   minframes = 1, 
-  velocity = 128, 
+  speed = 128, 
   thenote = 48,
   modetype = 2,
   restoresample = true,
@@ -195,8 +195,8 @@ function main(update_progress_func)
       end
       originallastframe = lastframe
     end
-    if options.maxvelocity.value > (lastframe / 2) then
-      options.maxvelocity.value = lastframe / 2
+    if options.maxspeed.value > (lastframe / 2) then
+      options.maxspeed.value = lastframe / 2
     end
     if options.minframes.value > lastframe then
       options.minframes.value = lastframe    
@@ -207,7 +207,7 @@ function main(update_progress_func)
     
     -- Here begins the logic for actually moving the loop points around...
     --
-    -- 1 - loose   - the start and end points move back and forth with unique velocities
+    -- 1 - loose   - the start and end points move back and forth with unique spdocities
     -- 2 - pitch   - the start and end points move together in order to create a pitch
     -- 3 - ?????
   
@@ -240,11 +240,11 @@ function main(update_progress_func)
         end
         if (endpos - startpos) < options.minframes.value then 
           --if options.collisiontype.value == 2 then -- bounce 2 -- this is broken please do not use
-          --   s = options.startvel.value 
-          --   e = options.endvel.value
+          --   s = options.startspd.value 
+          --   e = options.endspd.value
           --   if startpos + e < endpos + s and endpos + s > startpos + e then
-          --     options.startvel.value = e
-          --     options.endvel.value = s
+          --     options.startspd.value = e
+          --     options.endspd.value = s
           --   end
           --end
           if options.returntopitch.value == true then -- switch to pitch mode
@@ -257,15 +257,15 @@ function main(update_progress_func)
             startpos = lastframe - options.minframes.value
             endpos = lastframe
           end
-          direction = options.startvel.value + options.endvel.value
+          direction = options.startspd.value + options.endspd.value
           if direction > 0 then 
-            if options.startvel.value > options.endvel.value then
+            if options.startspd.value > options.endspd.value then
               sflip = true
             else
               eflip = true
             end
           elseif direction < 0 then 
-            if options.startvel.value < options.endvel.value then
+            if options.startspd.value < options.endspd.value then
               sflip = true
             else
               eflip = true
@@ -277,24 +277,24 @@ function main(update_progress_func)
           end
         end   
         if (sflip == true) then
-          options.startvel.value = options.startvel.value * -1
+          options.startspd.value = options.startspd.value * -1
           sflip = false      
         end
         if (eflip == true) then
-          options.endvel.value = options.endvel.value * -1
+          options.endspd.value = options.endspd.value * -1
           eflip = false      
         end
       end
       if options.startenable.value == true then
-        startpos = startpos + options.startvel.value
+        startpos = startpos + options.startspd.value
       else
-        options.startvel.value = 0
+        options.startspd.value = 0
         startpos = selected_sample.loop_start
       end
       if options.endenable.value == true then
-        endpos = endpos + options.endvel.value
+        endpos = endpos + options.endspd.value
       else
-        options.endvel.value = 0
+        options.endspd.value = 0
         endpos = selected_sample.loop_end
       end
     end
@@ -312,11 +312,11 @@ function main(update_progress_func)
         vflip = true
       end
       if (vflip == true) then
-        options.velocity.value = options.velocity.value * -1
+        options.speed.value = options.speed.value * -1
         vflip = false      
       end
-      startpos = startpos + options.velocity.value
-      endpos = startpos + options.velocity.value + targetframes 
+      startpos = startpos + options.speed.value
+      endpos = startpos + options.speed.value + targetframes 
     end   
     update_progress_func()
     coroutine.yield()
@@ -342,8 +342,8 @@ function init_tool()
     lastsample = rsong.selected_sample_index
     lastframe = selected_sample.sample_buffer.number_of_frames
     originallastframe = lastframe
-    if options.maxvelocity.value > (lastframe / 2) then
-      options.maxvelocity.value = lastframe / 2
+    if options.maxspeed.value > (lastframe / 2) then
+      options.maxspeed.value = lastframe / 2
     end  
     if options.minframes.value > lastframe then
       options.minframes.value = lastframe
@@ -366,33 +366,33 @@ function create_gui()
     vb.views.minf_label.text = "Minimum Frames: " .. options.minframes.value
   end
 
-  local function changemaxvelocity(self)
-    options.maxvelocity.value = vb.views.maxvel.value
-    vb.views.svel.min = (options.maxvelocity.value * -1)
-    vb.views.svel.max = options.maxvelocity.value
-    if options.startvel.value > options.maxvelocity.value then
-      options.startvel.value = options.maxvelocity.value
+  local function changemaxspeed(self)
+    options.maxspeed.value = vb.views.maxspd.value
+    vb.views.sspd.min = (options.maxspeed.value * -1)
+    vb.views.sspd.max = options.maxspeed.value
+    if options.startspd.value > options.maxspeed.value then
+      options.startspd.value = options.maxspeed.value
     end
-    if math.abs(options.startvel.value) > options.maxvelocity.value then
-      options.startvel.value = options.maxvelocity.value * -1
+    if math.abs(options.startspd.value) > options.maxspeed.value then
+      options.startspd.value = options.maxspeed.value * -1
     end
-    vb.views.evel.min = (options.maxvelocity.value * -1)
-    vb.views.evel.max = options.maxvelocity.value
-    if options.endvel.value > options.maxvelocity.value then
-      options.endvel.value = options.maxvelocity.value
+    vb.views.espd.min = (options.maxspeed.value * -1)
+    vb.views.espd.max = options.maxspeed.value
+    if options.endspd.value > options.maxspeed.value then
+      options.endspd.value = options.maxspeed.value
     end
-    if math.abs(options.endvel.value) > options.maxvelocity.value then
-      options.endvel.value = options.maxvelocity.value * -1
+    if math.abs(options.endspd.value) > options.maxspeed.value then
+      options.endspd.value = options.maxspeed.value * -1
     end
-    vb.views.vel.min = (options.maxvelocity.value * -1)
-    vb.views.vel.max = options.maxvelocity.value
-    if options.velocity.value > options.maxvelocity.value then
-      options.velocity.value = options.maxvelocity.value
+    vb.views.spd.min = (options.maxspeed.value * -1)
+    vb.views.spd.max = options.maxspeed.value
+    if options.speed.value > options.maxspeed.value then
+      options.speed.value = options.maxspeed.value
     end
-    if math.abs(options.velocity.value) > options.maxvelocity.value then
-      options.velocity.value = options.maxvelocity.value * -1
+    if math.abs(options.speed.value) > options.maxspeed.value then
+      options.speed.value = options.maxspeed.value * -1
     end
-    vb.views.maxvel_label.text = "Maximum Velocity: " .. options.maxvelocity.value
+    vb.views.maxspd_label.text = "Maximum speed: " .. options.maxspeed.value
   end 
 
   local function changesenable()
@@ -412,19 +412,19 @@ function create_gui()
     vb.views.pitch_text.text = "Note: " .. notename(options.thenote.value)
   end
 
-  local function changevel()
-    options.velocity.value = vb.views.vel.value
-    vb.views.vel_text.text = "Pitch velocity: " .. tostring(options.velocity.value) 
+  local function changespd()
+    options.speed.value = vb.views.spd.value
+    vb.views.spd_text.text = "Pitch speed: " .. tostring(options.speed.value) 
   end
   
-  local function changesvel()
-    options.startvel.value = vb.views.svel.value
-    vb.views.svel_text.text = "Loose Start Velocity: " .. tostring(options.startvel.value) 
+  local function changesspd()
+    options.startspd.value = vb.views.sspd.value
+    vb.views.sspd_text.text = "Loose Start speed: " .. tostring(options.startspd.value) 
   end
   
-  local function changeevel() 
-    options.endvel.value = vb.views.evel.value
-    vb.views.evel_text.text = "Loose End Velocity: " .. tostring(options.endvel.value)
+  local function changeespd() 
+    options.endspd.value = vb.views.espd.value
+    vb.views.espd_text.text = "Loose End speed: " .. tostring(options.endspd.value)
   end
   
   local function changeloop()
@@ -441,12 +441,12 @@ function create_gui()
       targetframesstring = string.format("Aiming for: %d", targetframes)
     end
     vb.views.minf.value = options.minframes.value
-    vb.views.maxvel.value = options.maxvelocity.value
+    vb.views.maxspd.value = options.maxspeed.value
     vb.views.mode.value = options.modetype.value 
-    vb.views.svel.value = options.startvel.value
-    vb.views.evel.value = options.endvel.value
+    vb.views.sspd.value = options.startspd.value
+    vb.views.espd.value = options.endspd.value
     vb.views.ltype.value = selected_sample.loop_mode
-    vb.views.vel.value = options.velocity.value
+    vb.views.spd.value = options.speed.value
     vb.views.pitch.value = options.thenote.value
     vb.views.rpitch.value  = options.returntopitch.value
     vb.views.progress_text.text = string.format(
@@ -526,6 +526,27 @@ function create_gui()
             },
             vb:space { height = 10 },
             vb:slider {
+              id = "maxspd",
+              width = 256,
+              height = 25,
+              min = 1,
+              max = options.maxmaxspeed.value,
+              value = options.maxspeed.value,
+              notifier = changemaxspeed,
+              midi_mapping = "ModLoop:Maxspeed"
+            },
+            vb:text {
+              id = "maxspd_label",
+              text = "Maximum speed:" .. options.maxspeed.value
+            },
+            vb:space { height = 10 },
+            vb:horizontal_aligner { mode = "center", 
+              vb:text {
+                id = "loose_label",
+                text = "--- Loose Options ---"
+              }
+            },
+            vb:slider {
               id = "minf",
               width = 256,
               height = 25,
@@ -539,27 +560,6 @@ function create_gui()
               id = "minf_label",
               text = "Minimum Frames: " .. options.minframes.value 
             },
-            vb:slider {
-              id = "maxvel",
-              width = 256,
-              height = 25,
-              min = 1,
-              max = options.maxmaxvelocity.value,
-              value = options.maxvelocity.value,
-              notifier = changemaxvelocity,
-              midi_mapping = "ModLoop:MaxVelocity"
-            },
-            vb:text {
-              id = "maxvel_label",
-              text = "Maximum Velocity:" .. options.maxvelocity.value
-            },
-            vb:space { height = 10 },
-            vb:horizontal_aligner { mode = "center", 
-              vb:text {
-                id = "loose_label",
-                text = "--- LOOSE OPTIONS ---"
-              }
-            },
             vb:row {
               vb:checkbox {
                 id = "rpitch",
@@ -569,19 +569,19 @@ function create_gui()
               },
               vb:text {
                 id = "rpitch_label",
-                text = "Return to pitch gracefully"
+                text = "Return to pitch mode on min frames"
               }
             },  
             vb:row {
               vb:slider {
-                id = "svel",
+                id = "sspd",
                 width = 231,
                 height = 25,
-                min = (options.maxvelocity.value * -1),
-                max = options.maxvelocity.value,
-                value = options.startvel.value,
-                notifier = changesvel,
-                midi_mapping = "ModLoop:LooseStartVelocity"
+                min = (options.maxspeed.value * -1),
+                max = options.maxspeed.value,
+                value = options.startspd.value,
+                notifier = changesspd,
+                midi_mapping = "ModLoop:LooseStartspeed"
               },
               vb:vertical_aligner { mode = "center",
                 vb:checkbox {
@@ -593,19 +593,19 @@ function create_gui()
               }
             },   
             vb:text {
-              id = "svel_text",
-              text = "Loose Start Velocity: " .. tostring(options.startvel.value)
+              id = "sspd_text",
+              text = "Loose Start speed: " .. tostring(options.startspd.value)
             },
             vb:row {
               vb:slider {
-                id = "evel",
+                id = "espd",
                 width = 231,
                 height = 25,
-                min = (options.maxvelocity.value * -1),
-                max = options.maxvelocity.value,
-                value = options.endvel.value,
-                notifier = changeevel,
-                midi_mapping = "ModLoop:LooseEndVelocity"
+                min = (options.maxspeed.value * -1),
+                max = options.maxspeed.value,
+                value = options.endspd.value,
+                notifier = changeespd,
+                midi_mapping = "ModLoop:LooseEndspeed"
               },
               vb:vertical_aligner { mode = "center",
                 vb:checkbox {
@@ -617,29 +617,29 @@ function create_gui()
               }  
             }, 
             vb:text {
-              id = "evel_text",
-              text = "Loose End Velocity: " .. tostring(options.endvel.value)
+              id = "espd_text",
+              text = "Loose End speed: " .. tostring(options.endspd.value)
             },
             vb:space { height = 10 },
             vb:horizontal_aligner { mode = "center",
               vb:text {
                 id = "pitch_label",
-                text = "--- PITCH OPTIONS ---"
+                text = "--- Pitch Options ---"
               }
             },  
             vb:slider {
-              id = "vel",
+              id = "spd",
               width = 256,
               height = 25,
-              min = (options.maxvelocity.value * -1),
-              max = options.maxvelocity.value,
-              value = options.velocity.value,
-              notifier = changevel,
-              midi_mapping = "ModLoop:PitchVelocity"
+              min = (options.maxspeed.value * -1),
+              max = options.maxspeed.value,
+              value = options.speed.value,
+              notifier = changespd,
+              midi_mapping = "ModLoop:Pitchspeed"
             },
             vb:text {
-              id = "vel_text",
-              text = "Pitch Velocity: " .. tostring(options.velocity.value)
+              id = "spd_text",
+              text = "Pitch speed: " .. tostring(options.speed.value)
             },
             vb:slider {
               id = "pitch",
@@ -661,7 +661,7 @@ function create_gui()
     }
   }
  }  
- dialog = renoise.app():show_custom_dialog("ModLoop v0.20", dialog_content)
+ dialog = renoise.app():show_custom_dialog("ModLoop v0.21", dialog_content)
  return {start_stop_process=start_stop_process}
 end
 
@@ -670,7 +670,7 @@ options.collisiontype.value = 3
 
 
 renoise.tool():add_menu_entry{
-  name = "Main Menu:Tools:ModLoop v0.20",
+  name = "Main Menu:Tools:ModLoop v0.21",
   invoke = function()
     init_tool()
     if (nosample == false) then
@@ -740,25 +740,25 @@ renoise.tool():add_midi_mapping{
 }
 
 renoise.tool():add_midi_mapping{
-  name = "ModLoop:MaxVelocity",
+  name = "ModLoop:Maxspeed",
   invoke = function(midi_message)
-    options.maxvelocity.value = (options.maxmaxvelocity.value / 128) * midi_message.int_value
+    options.maxspeed.value = (options.maxmaxspeed.value / 128) * midi_message.int_value
   end
 }
 
 
 
 renoise.tool():add_midi_mapping{
-  name = "ModLoop:LooseStartVelocity",
+  name = "ModLoop:LooseStartspeed",
   invoke = function(midi_message)
-    options.startvel.value = (midi_message.int_value - 64) * (options.maxvelocity.value / 64)  
+    options.startspd.value = (midi_message.int_value - 64) * (options.maxspeed.value / 64)  
   end
 }
 
 renoise.tool():add_midi_mapping{
-  name = "ModLoop:LooseEndVelocity",
+  name = "ModLoop:LooseEndspeed",
   invoke = function(midi_message)
-    options.endvel.value = (midi_message.int_value - 64) * (options.maxvelocity.value / 64)  
+    options.endspd.value = (midi_message.int_value - 64) * (options.maxspeed.value / 64)  
   end
 }
 
@@ -770,9 +770,9 @@ renoise.tool():add_midi_mapping{
 }
 
 renoise.tool():add_midi_mapping{
-  name = "ModLoop:PitchVelocity",
+  name = "ModLoop:Pitchspeed",
   invoke = function(midi_message)
-    options.velocity.value = (midi_message.int_value - 64) * (options.maxvelocity.value / 64)   
+    options.speed.value = (midi_message.int_value - 64) * (options.maxspeed.value / 64)   
   end
 }
 
