@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ScriptingToolPreferences doc_version="0">
+  <returntopitch>false</returntopitch>
   <modetype>2</modetype>
-  <startvel>10</startvel>
-  <thenote>40</thenote>
-  <endvel>20</endvel>
-  <velocity>128</velocity>
-  <minframes>1.0</minframes>
-  <maxvelocity>512</maxvelocity>
+  <collisiontype>3</collisiontype>
+  <maxmaxvelocity>4096</maxmaxvelocity>
+  <velocity>-40.2319999999999</velocity>
+  <startenable>true</startenable>
+  <maxvelocity>525.15999999999997</maxvelocity>
+  <endenable>true</endenable>
+  <minframepitch>false</minframepitch>
+  <startvel>-269.88191999999998</startvel>
+  <maxminframes>2048</maxminframes>
+  <endvel>-38.811519999999994</endvel>
+  <thenote>48</thenote>
+  <restoresample>true</restoresample>
+  <minframes>337.12301738808014</minframes>
 </ScriptingToolPreferences>
