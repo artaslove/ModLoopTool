@@ -237,9 +237,11 @@ function main(update_progress_func)
         if startpos > endpos then 
           startpos = endpos - 1
           sflip = true
+          eflip = true
         end
         if endpos < startpos then 
           endpos = startpos + 1
+          sflip = true
           eflip = true
         end
         if (endpos - startpos) < options.minframes.value then 
