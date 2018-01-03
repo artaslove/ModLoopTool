@@ -279,7 +279,19 @@ function main(update_progress_func)
             eflip = true
             sflip = true
           end
-        end   
+        end
+        if (startpos < 1) and (startpos + (options.startspd.value * -1) > (endpos + options.endspd.value)) then
+          endpos = (startpos + options.startspd.value * -1) + options.minframes.value
+          if options.endspd.value < 0 then
+            eflip = true
+          end
+        end    
+        if (endpos > lastframe) and (endpos + (options.endspd.value * -1) < (startpos + options.startspd.value)) then
+          startpos = (endpos + options.endspd.value * -1) - options.minframes.value
+          if options.startspd.value > 0 then
+            sflip = true
+          end
+        end    
         if (sflip == true) then
           options.startspd.value = options.startspd.value * -1
           sflip = false      
@@ -665,7 +677,7 @@ function create_gui()
     }
   }
  }  
- dialog = renoise.app():show_custom_dialog("ModLoop v0.22", dialog_content)
+ dialog = renoise.app():show_custom_dialog("ModLoop v0.23", dialog_content)
  return {start_stop_process=start_stop_process}
 end
 
@@ -674,7 +686,7 @@ options.collisiontype.value = 3
 
 
 renoise.tool():add_menu_entry{
-  name = "Main Menu:Tools:ModLoop v0.22",
+  name = "Main Menu:Tools:ModLoop v0.23",
   invoke = function()
     init_tool()
     if (nosample == false) then
