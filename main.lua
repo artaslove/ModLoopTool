@@ -8,11 +8,12 @@ This is an experiment to modify sample loop positions by bonafide@martica.org
 portions of this code for handling notes and frequencies, although slightly modified are from:
 https://github.com/MightyPirates/OpenComputers/blob/master-MC1.7.10/src/main/resources/assets/opencomputers/loot/openos/lib/note.lua
 
-V0.22
+V0.23
 
 ToDo:
   - restoring sample properties on close
   - additional modes of operation such as more choices for what to do in loose mode when a loop point hits a boundary
+    - the midpoint is still a bit weird 
   - glide option for pitch 
     - glide speed
   - finer control over pitch in general
@@ -222,29 +223,27 @@ function main(update_progress_func)
         selected_sample.loop_end = math.floor(endpos + 0.5)
       end
       if options.collisiontype.value > 0 then -- bounce1
-        if endpos > lastframe then
+        if endpos > lastframe then  -- we've reached the end
           endpos = lastframe
           eflip = true
+          if (endpos + (options.endspd.value * -1) < (startpos + options.startspd.value)) then
+            startpos = (endpos + options.endspd.value * -1) - options.minframes.value
+            if options.startspd.value > 0 then
+              sflip = true
+            end
+          end  
         end
-        if startpos < 1  then
+        if startpos < 1  then -- we've reached the beginning
           startpos = 1
           sflip = true
+          if (startpos + (options.startspd.value * -1) > (endpos + options.endspd.value)) then
+            endpos = (startpos + options.startspd.value * -1) + options.minframes.value
+            if options.endspd.value < 0 then
+              eflip = true
+            end
+          end  
         end
-        if endpos < 2 then
-          endpos = 2
-          eflip = true
-        end
-        if startpos > endpos then 
-          startpos = endpos - 1
-          sflip = true
-          eflip = true
-        end
-        if endpos < startpos then 
-          endpos = startpos + 1
-          sflip = true
-          eflip = true
-        end
-        if (endpos - startpos) < options.minframes.value then 
+        if (endpos - startpos) < options.minframes.value then  -- we've reached the midpoint 
           --if options.collisiontype.value == 2 then -- bounce 2 -- this is broken please do not use
           --   s = options.startspd.value 
           --   e = options.endspd.value
@@ -282,18 +281,6 @@ function main(update_progress_func)
             sflip = true
           end
         end
-        if (startpos < 1) and (startpos + (options.startspd.value * -1) > (endpos + options.endspd.value)) then
-          endpos = (startpos + options.startspd.value * -1) + options.minframes.value
-          if options.endspd.value < 0 then
-            eflip = true
-          end
-        end    
-        if (endpos > lastframe) and (endpos + (options.endspd.value * -1) < (startpos + options.startspd.value)) then
-          startpos = (endpos + options.endspd.value * -1) - options.minframes.value
-          if options.startspd.value > 0 then
-            sflip = true
-          end
-        end    
         if (sflip == true) then
           options.startspd.value = options.startspd.value * -1
           sflip = false      
