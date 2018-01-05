@@ -8,27 +8,23 @@ This is an experiment to modify sample loop positions by bonafide@martica.org
 portions of this code for handling notes and frequencies, although slightly modified are from:
 https://github.com/MightyPirates/OpenComputers/blob/master-MC1.7.10/src/main/resources/assets/opencomputers/loot/openos/lib/note.lua
 
-V0.23
+V0.24
 
-ToDo:
-  - restoring sample properties on close
-  - additional modes of operation such as more choices for what to do in loose mode when a loop point hits a boundary
-    - the midpoint is still a bit weird 
-  - glide option for pitch 
-    - glide speed
-  - finer control over pitch in general
-    - octave, cents
-  - bitmaps 
-    - markers on sliders
-    - start stop button 
+To Do:
+  - additional modes of operation (expand mode? shrink mode?)
+  - fix the midpoint behavior (it's a bit erratic right now)
+  - glide speed for pitch control
+  - finer control over pitch (octaves, cents)
+  - bitmaps
+  - ???
 
-eventual goals
-  - become aware of the highest and lowest current note(s), either in selected track of composition or currently playing, this enables:
-    - better representation in the GUI of the actual note being played 
+Eventually:
+  - retrieve the notes being played with the selected sample if possible, which would enable:
+    - representation in the GUI of the actual note(s)
     - not exceeding playback speed
-    - fixing the pitch change with high spdocities
+    - fixing the pitch change with high speeds
     - random mode
-    - the option of using zero crossings
+    - figuring out how much of the sample buffer we need to check to find a zero crossing
 
 ]]
 
@@ -153,6 +149,7 @@ onecycle = nil
 rsong = nil
 selected_sample = nil
 lastsample = nil
+lastinstrument = nil
 lastframe = nil
 sample_rate = nil
 pat_track = nil
@@ -165,18 +162,20 @@ gui = nil
 direction = nil
 nosample = true
 
-
 function main(update_progress_func)
   local s = nil
   local e = nil
 
-  while true do 
+  while true do
    if (rsong.selected_sample ~= nil) then 
+    if (not gui.dialog or not gui.dialog.visible) then    
+      break    
+    end
     if (lastsample ~= rsong.selected_sample_index) then
-      if restoresample == true then
-        rsong.selected_sample[lastsample].loop_start = originalstartpos
-        rsong.selected_sample[lastsample].loop_end = originalendpos
-        rsong.selected_sample[lastsample].loop_mode = originalstartpos
+      if options.restoresample.value == true then
+        rsong.instruments[lastinstrument].sample[lastsample].loop_start = originalstartpos
+        rsong.instruments[lastinstrument].sample[lastsample].loop_end = originalendpos
+        rsong.instruments[lastinstrument].sample[lastsample].loop_mode = originalloopmode
       end
       selected_sample = rsong.selected_sample
       originalstartpos = selected_sample.loop_start
@@ -208,7 +207,7 @@ function main(update_progress_func)
     
     -- Here begins the logic for actually moving the loop points around...
     --
-    -- 1 - loose   - the start and end points move back and forth with unique spdocities
+    -- 1 - loose   - the start and end points move back and forth with unique speeds
     -- 2 - pitch   - the start and end points move together in order to create a pitch
     -- 3 - ?????
   
@@ -326,6 +325,7 @@ function main(update_progress_func)
     update_progress_func()
     coroutine.yield()
     lastsample = rsong.selected_sample_index
+    lastinstrument = rsong.selected_instrument_index
    else
      break
    end 
@@ -345,6 +345,7 @@ function init_tool()
     endpos = selected_sample.loop_end
     sample_rate = selected_sample.sample_buffer.sample_rate
     lastsample = rsong.selected_sample_index
+    lastinstrument = rsong.selected_instrument_index
     lastframe = selected_sample.sample_buffer.number_of_frames
     originallastframe = lastframe
     if options.maxspeed.value > (lastframe / 2) then
@@ -352,6 +353,20 @@ function init_tool()
     end  
     if options.minframes.value > lastframe then
       options.minframes.value = lastframe
+    end
+  else
+    nosample = true
+  end
+end
+
+function close_tool()
+  if (rsong.selected_sample ~= nil) then
+    if (lastsample == rsong.selected_sample_index) then
+      if options.restoresample.value == true then
+        rsong.selected_sample.loop_start = originalstartpos
+        rsong.selected_sample.loop_end = originalendpos
+        rsong.selected_sample.loop_mode = originalloopmode
+      end  
     end
   end
 end
@@ -666,23 +681,41 @@ function create_gui()
     }
   }
  }  
- dialog = renoise.app():show_custom_dialog("ModLoop v0.23", dialog_content)
- return {start_stop_process=start_stop_process}
+ dialog = renoise.app():show_custom_dialog("ModLoop v0.24", dialog_content)
+ return {start_stop_process=start_stop_process, dialog=dialog}
 end
 
 renoise.tool().preferences = options
-options.collisiontype.value = 3
 
-
-renoise.tool():add_menu_entry{
-  name = "Main Menu:Tools:ModLoop v0.23",
-  invoke = function()
-    init_tool()
-    if (nosample == false) then
-      gui = create_gui()
+function broom_car_timer()
+  if (nosample == false) then
+    if (not gui.dialog or not gui.dialog.visible) then    
+      close_tool()
+      if renoise.tool():has_timer(broom_car_timer) then
+        renoise.tool():remove_timer(broom_car_timer)
+      end
     end
   end
-}
+end
+
+if not renoise.tool():has_timer(broom_car_timer) then
+  renoise.tool():add_timer(broom_car_timer,50)
+end
+
+if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.24") == false then
+  renoise.tool():add_menu_entry{
+    name = "Main Menu:Tools:ModLoop v0.24",
+    invoke = function()
+      init_tool()
+      if (nosample == false) then
+        gui = create_gui()
+        renoise.tool().app_release_document_observable:add_notifier(gui.start_stop_process) 
+      end
+    end
+  }
+end
+
+-- Midi Mapping
 
 renoise.tool():add_midi_mapping{
   name = "ModLoop:ToggleStart",
@@ -751,8 +784,6 @@ renoise.tool():add_midi_mapping{
   end
 }
 
-
-
 renoise.tool():add_midi_mapping{
   name = "ModLoop:LooseStartspeed",
   invoke = function(midi_message)
@@ -782,9 +813,15 @@ renoise.tool():add_midi_mapping{
 }
 
 renoise.tool():add_midi_mapping{
-  name = "ModLoop:Note",
+  name = "ModLoop:Note",              
   invoke = function(midi_message)
-    options.thenote.value = midi_message.int_value   
+    if midi_message.int_value > 20 and midi_message.int_value < 108 then
+      options.thenote.value = midi_message.int_value   
+    elseif midi_message.int_value < 21 then
+      options.thenote.value = 21
+    else
+      options.thenote.value = 107
+    end
   end
 }
 
