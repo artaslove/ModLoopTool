@@ -171,7 +171,7 @@ function main(update_progress_func)
     if (not gui.dialog or not gui.dialog.visible) then    
       break    
     end
-    if (lastsample ~= rsong.selected_sample_index) then
+    if (lastsample ~= rsong.selected_sample_index) or (lastinstrument ~= rsong.selected_instrument_index) then -- this doesn't appear to be working
       if options.restoresample.value == true then
         rsong.instruments[lastinstrument].sample[lastsample].loop_start = originalstartpos
         rsong.instruments[lastinstrument].sample[lastsample].loop_end = originalendpos
@@ -334,6 +334,7 @@ function main(update_progress_func)
 end
 
 function init_tool()
+  nosample = true
   rsong = renoise.song()
   selected_sample = rsong.selected_sample
   if (rsong.selected_sample ~= nil) then
@@ -354,14 +355,12 @@ function init_tool()
     if options.minframes.value > lastframe then
       options.minframes.value = lastframe
     end
-  else
-    nosample = true
   end
 end
 
 function close_tool()
   if (rsong.selected_sample ~= nil) then
-    if (lastsample == rsong.selected_sample_index) then
+    if (lastsample == rsong.selected_sample_index and lastinstrument == rsong.selected_instrument_index) then
       if options.restoresample.value == true then
         rsong.selected_sample.loop_start = originalstartpos
         rsong.selected_sample.loop_end = originalendpos
@@ -476,7 +475,6 @@ function create_gui()
   local function start_stop_process(self)
     if (not process or not process:running()) then
       vb.views.start_button.text = "Stop"
-      nosample = true
       init_tool()
       if nosample == false then
         process = ProcessSlicer(main, update_progress)
@@ -688,18 +686,12 @@ end
 renoise.tool().preferences = options
 
 function broom_car_timer()
-  if (nosample == false) then
-    if (not gui.dialog or not gui.dialog.visible) then    
-      close_tool()
-      if renoise.tool():has_timer(broom_car_timer) then
-        renoise.tool():remove_timer(broom_car_timer)
-      end
+  if (not gui.dialog or not gui.dialog.visible) then    
+    close_tool()
+    if renoise.tool():has_timer(broom_car_timer) then
+      renoise.tool():remove_timer(broom_car_timer)
     end
   end
-end
-
-if not renoise.tool():has_timer(broom_car_timer) then
-  renoise.tool():add_timer(broom_car_timer,50)
 end
 
 if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.24") == false then
@@ -709,7 +701,8 @@ if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.24") == false then
       init_tool()
       if (nosample == false) then
         gui = create_gui()
-        renoise.tool().app_release_document_observable:add_notifier(gui.start_stop_process) 
+        renoise.tool().app_release_document_observable:add_notifier(gui.start_stop_process)
+        renoise.tool():add_timer(broom_car_timer,50) 
       end
     end
   }
