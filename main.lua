@@ -176,7 +176,7 @@ function main(update_progress_func)
   local e = nil
 
   while true do
-   if (rsong.selected_sample ~= nil) then 
+   if (gui ~= nil and rsong.selected_sample ~= nil) then 
     if (not gui.dialog or not gui.dialog.visible) then    
       break    
     end
