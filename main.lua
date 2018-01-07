@@ -526,15 +526,15 @@ function create_gui()
       else
         vb.views.start_button.text = "Start"
         vb.views.progress_text.text = ""
-	if options.restoreonstop.value == true then
-	  restorerightnow()
-	end
+  if options.restoreonstop.value == true then
+    restorerightnow()
+  end
       end 
     elseif (process and process:running()) then
       vb.views.start_button.text = "Start"
       vb.views.progress_text.text = ""
       if options.restoreonstop.value == true then
-	restorerightnow()
+  restorerightnow()
       end
       process:stop()
     end
@@ -777,7 +777,7 @@ end
 
 if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.25") == false then
   renoise.tool():add_menu_entry{
-    name = "Main Menu:Tools:ModLoop v0.24",
+    name = "Main Menu:Tools:ModLoop v0.25",
     invoke = function()
       if gui == nil then 
         init_tool()

@@ -6,13 +6,13 @@
   <thenote>36</thenote>
   <speed>7.4264650616114949</speed>
   <restoreonswitch>true</restoreonswitch>
-  <endspd>212.92178199052145</endspd>
+  <endspd>-212.92178199052145</endspd>
   <maxspeed>512</maxspeed>
   <modetype>1.0</modetype>
   <restoreonclose>true</restoreonclose>
   <collisiontype>3</collisiontype>
   <minframepitch>false</minframepitch>
-  <restoreonstop>true</restoreonstop>
+  <restoreonstop>false</restoreonstop>
   <maxminframes>2048</maxminframes>
   <restoresample>true</restoresample>
   <endenable>true</endenable>
