@@ -8,14 +8,18 @@ This is an experiment to modify sample loop positions by bonafide@martica.org
 portions of this code for handling notes and frequencies, although slightly modified are from:
 https://github.com/MightyPirates/OpenComputers/blob/master-MC1.7.10/src/main/resources/assets/opencomputers/loot/openos/lib/note.lua
 
-V0.24
+V0.25
 
 To Do:
+  - restore on new instrument / new sample (with the timer, because that action can be outside the main loop)
   - additional modes of operation (expand mode? shrink mode?)
-  - fix the midpoint behavior (it's a bit erratic right now)
-  - glide speed for pitch control
-  - finer control over pitch (octaves, cents)
-  - bitmaps
+    - expand until at beginning and end, then stop?
+    - shrink until minframes, then stop or pitch mode if selected?
+  - fix or provide more options for the collision behavior
+    - maybe this isn't really broken after all? 
+  - glide option and speed for pitch mode
+  - finer control over pitch mode (octaves, cents) 
+  - bitmaps and prettier gui in general 
   - ???
 
 Eventually:
@@ -25,6 +29,7 @@ Eventually:
     - fixing the pitch change with high speeds
     - random mode
     - figuring out how much of the sample buffer we need to check to find a zero crossing
+    - leverage the unused FHK effects parameters by reading the sequence?
 
 ]]
 
@@ -134,7 +139,10 @@ local options = renoise.Document.create("ScriptingToolPreferences") {
   restoresample = true,
   minframepitch = false,
   collisiontype = 1,
-  returntopitch = false
+  returntopitch = false,
+  restoreonclose = true,
+  restoreonstop = false,
+  restoreonswitch = true
 }
 
 originalstartpos = nil
@@ -161,6 +169,7 @@ vflip = false
 gui = nil
 direction = nil
 nosample = true
+restoring = false
 
 function main(update_progress_func)
   local s = nil
@@ -171,19 +180,30 @@ function main(update_progress_func)
     if (not gui.dialog or not gui.dialog.visible) then    
       break    
     end
-    if (lastsample ~= rsong.selected_sample_index) or (lastinstrument ~= rsong.selected_instrument_index) then -- this doesn't appear to be working
-      if options.restoresample.value == true then
-        rsong.instruments[lastinstrument].sample[lastsample].loop_start = originalstartpos
-        rsong.instruments[lastinstrument].sample[lastsample].loop_end = originalendpos
-        rsong.instruments[lastinstrument].sample[lastsample].loop_mode = originalloopmode
-      end
+    --if (rsong.transport.playing == true) then -- maybe we can use an effects column, FHK seem to be free
+    --  print (rsong.selected_effect_column.number_string)
+    --end
+    if restoring == true and lastsample == rsong.selected_sample_index and lastinstrument == rsong.selected_instrument_index then
+      startpos = originalstartpos
+      endpos = originalendpos
+      rsong.selected_sample.loop_mode = originalloopmode
+      restoring = false
+    end 
+    if (lastsample ~= rsong.selected_sample_index) or (lastinstrument ~= rsong.selected_instrument_index) then 
+      --if options.restoreonswitch.value == true then -- broken... I have to work this into the timer as it has to check outside the main loop
+      --  rsong.instruments[lastinstrument]:sample(lastsample).loop_start = originalstartpos
+      --  rsong.instruments[lastinstrument]:sample(lastsample).loop_end = originalendpos
+      --  rsong.instruments[lastinstrument]:sample(lastsample).loop_mode = originalloopmode
+      --end
       selected_sample = rsong.selected_sample
       originalstartpos = selected_sample.loop_start
-      originalendpos = selected.sample.loop_end
+      originalendpos = selected_sample.loop_end
       originalloopmode = selected_sample.loop_mode
       startpos = selected_sample.loop_start
       endpos = selected_sample.loop_end
       sample_rate = selected_sample.sample_buffer.sample_rate
+      lastsample = rsong.selected_sample_index
+      lastinstrument = rsong.selected_instrument_index
     end  
     lastframe = selected_sample.sample_buffer.number_of_frames
     if lastframe ~= originallastframe then -- user is adding or deleting sample content
@@ -324,8 +344,6 @@ function main(update_progress_func)
     end   
     update_progress_func()
     coroutine.yield()
-    lastsample = rsong.selected_sample_index
-    lastinstrument = rsong.selected_instrument_index
    else
      break
    end 
@@ -361,13 +379,14 @@ end
 function close_tool()
   if (rsong.selected_sample ~= nil) then
     if (lastsample == rsong.selected_sample_index and lastinstrument == rsong.selected_instrument_index) then
-      if options.restoresample.value == true then
+      if options.restoreonclose.value == true then
         rsong.selected_sample.loop_start = originalstartpos
         rsong.selected_sample.loop_end = originalendpos
         rsong.selected_sample.loop_mode = originalloopmode
       end  
     end
   end
+  gui = nil
 end
 
 function create_gui()
@@ -375,6 +394,29 @@ function create_gui()
   local directionstrings = {"---","-->","<--","<->"}
   local dialog, process
   local vb = renoise.ViewBuilder()
+
+  local function changerestoreonclose()
+    options.restoreonclose.value = vb.views.rclose.value  
+  end
+
+  local function changerestoreonstop()
+    options.restoreonstop.value = vb.views.rstop.value  
+  end
+
+  local function restorerightnow(self)
+    if (rsong.selected_sample ~= nil) then
+      if (lastsample == rsong.selected_sample_index and lastinstrument == rsong.selected_instrument_index) then
+        rsong.selected_sample.loop_start = originalstartpos
+        rsong.selected_sample.loop_end = originalendpos
+        rsong.selected_sample.loop_mode = originalloopmode
+      else
+        rsong.instruments[lastinstrument]:sample(lastsample).loop_start = originalstartpos
+        rsong.instruments[lastinstrument]:sample(lastsample).loop_end = originalendpos
+        rsong.instruments[lastinstrument]:sample(lastsample).loop_mode = originalloopmode
+      end
+      restoring = true
+    end
+  end
 
   local function changereturntopitch()
     options.returntopitch.value = vb.views.rpitch.value  
@@ -468,6 +510,8 @@ function create_gui()
     vb.views.spd.value = options.speed.value
     vb.views.pitch.value = options.thenote.value
     vb.views.rpitch.value  = options.returntopitch.value
+    vb.views.rclose.value  = options.restoreonclose.value
+    vb.views.rstop.value  = options.restoreonstop.value
     vb.views.progress_text.text = string.format(
     "%d %s %d    %s", startpos, directionstrings[selected_sample.loop_mode], endpos, targetframesstring)
   end
@@ -482,10 +526,16 @@ function create_gui()
       else
         vb.views.start_button.text = "Start"
         vb.views.progress_text.text = ""
+	if options.restoreonstop.value == true then
+	  restorerightnow()
+	end
       end 
     elseif (process and process:running()) then
       vb.views.start_button.text = "Start"
       vb.views.progress_text.text = ""
+      if options.restoreonstop.value == true then
+	restorerightnow()
+      end
       process:stop()
     end
   end
@@ -542,6 +592,37 @@ function create_gui()
               notifier = changeloop,
               midi_mapping = "ModLoop:LoopMode"
             },
+            vb:row {
+              vb:checkbox {
+                id = "rclose",
+                value = options.restoreonclose.value,
+                notifier = changerestoreonclose,
+              },
+              vb:text {
+                id = "rclose_label",
+                text = "Restore loop proprties on close"
+              }
+            },  
+            vb:row {
+              vb:checkbox {
+                id = "rstop",
+                value = options.restoreonstop.value,
+                notifier = changerestoreonstop,
+              },
+              vb:text {
+                id = "rstop_label",
+                text = "Restore loop proprties on stop"
+              }
+            },  
+            vb:button {
+              id = "restore",
+              text = "Restore right now",
+              height = DEFAULT_DIALOG_BUTTON_HEIGHT,
+              width = 256,
+              height = 25,
+              notifier = restorerightnow,
+              midi_mapping = "ModLoop:Restore"
+            },
             vb:space { height = 10 },
             vb:slider {
               id = "maxspd",
@@ -564,6 +645,18 @@ function create_gui()
                 text = "--- Loose Options ---"
               }
             },
+            vb:row {
+              vb:checkbox {
+                id = "rpitch",
+                value = options.returntopitch.value,
+                notifier = changereturntopitch,
+                midi_mapping = "ModLoop:ReturnToPitch"
+              },
+              vb:text {
+                id = "rpitch_label",
+                text = "Return to pitch mode on min frames"
+              }
+            },  
             vb:slider {
               id = "minf",
               width = 256,
@@ -578,18 +671,6 @@ function create_gui()
               id = "minf_label",
               text = "Minimum Frames: " .. options.minframes.value 
             },
-            vb:row {
-              vb:checkbox {
-                id = "rpitch",
-                value = options.returntopitch.value,
-                notifier = changereturntopitch,
-                midi_mapping = "ModLoop:ReturnToPitch"
-              },
-              vb:text {
-                id = "rpitch_label",
-                text = "Return to pitch mode on min frames"
-              }
-            },  
             vb:row {
               vb:slider {
                 id = "sspd",
@@ -679,8 +760,8 @@ function create_gui()
     }
   }
  }  
- dialog = renoise.app():show_custom_dialog("ModLoop v0.24", dialog_content)
- return {start_stop_process=start_stop_process, dialog=dialog}
+ dialog = renoise.app():show_custom_dialog("ModLoop v0.25", dialog_content)
+ return {start_stop_process=start_stop_process, dialog=dialog, restorerightnow=restorerightnow}
 end
 
 renoise.tool().preferences = options
@@ -694,15 +775,17 @@ function broom_car_timer()
   end
 end
 
-if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.24") == false then
+if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.25") == false then
   renoise.tool():add_menu_entry{
     name = "Main Menu:Tools:ModLoop v0.24",
     invoke = function()
-      init_tool()
-      if (nosample == false) then
-        gui = create_gui()
-        renoise.tool().app_release_document_observable:add_notifier(gui.start_stop_process)
-        renoise.tool():add_timer(broom_car_timer,50) 
+      if gui == nil then 
+        init_tool()
+        if (nosample == false) then
+          gui = create_gui()
+          renoise.tool().app_release_document_observable:add_notifier(gui.start_stop_process)
+          renoise.tool():add_timer(broom_car_timer,50) 
+        end
       end
     end
   }
@@ -718,6 +801,16 @@ renoise.tool():add_midi_mapping{
     end
   end
 }
+
+renoise.tool():add_midi_mapping{
+  name = "ModLoop:Restore",
+  invoke = function(midi_message)
+    if midi_message.int_value == 127 or midi_message.int_value == 0 then
+      gui.restorerightnow()
+    end
+  end
+}
+
 
 renoise.tool():add_midi_mapping{
   name = "ModLoop:Mode",

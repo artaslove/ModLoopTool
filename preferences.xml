@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ScriptingToolPreferences doc_version="0">
-  <startspd>-147.52621800947867</startspd>
-  <modetype>1.0</modetype>
+  <startspd>-237.49778199052156</startspd>
   <returntopitch>false</returntopitch>
-  <endenable>true</endenable>
-  <collisiontype>3</collisiontype>
   <startenable>true</startenable>
-  <restoresample>true</restoresample>
-  <minframes>366.93661756525728</minframes>
-  <minframepitch>false</minframepitch>
   <thenote>36</thenote>
-  <maxminframes>2048</maxminframes>
-  <speed>70.397534938388532</speed>
-  <endspd>298.93778199052144</endspd>
-  <maxmaxspeed>512</maxmaxspeed>
+  <speed>7.4264650616114949</speed>
+  <restoreonswitch>true</restoreonswitch>
+  <endspd>212.92178199052145</endspd>
   <maxspeed>512</maxspeed>
+  <modetype>1.0</modetype>
+  <restoreonclose>true</restoreonclose>
+  <collisiontype>3</collisiontype>
+  <minframepitch>false</minframepitch>
+  <restoreonstop>true</restoreonstop>
+  <maxminframes>2048</maxminframes>
+  <restoresample>true</restoresample>
+  <endenable>true</endenable>
+  <maxmaxspeed>512</maxmaxspeed>
+  <minframes>55.792617565257558</minframes>
 </ScriptingToolPreferences>
