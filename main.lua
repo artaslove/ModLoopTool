@@ -8,7 +8,7 @@ This is an experiment to modify sample loop positions by bonafide@martica.org
 portions of this code for handling notes and frequencies, although slightly modified are from:
 https://github.com/MightyPirates/OpenComputers/blob/master-MC1.7.10/src/main/resources/assets/opencomputers/loot/openos/lib/note.lua
 
-V0.25
+V0.26
 
 To Do:
   - restore on new instrument / new sample (with the timer, because that action can be outside the main loop)
@@ -470,7 +470,7 @@ function create_gui()
 
   local function changepitch()
     options.thenote.value = math.floor(vb.views.pitch.value + 0.5)
-    vb.views.pitch_text.text = "Note: " .. notename(options.thenote.value)
+    vb.views.pitch_text.text = "Base Note: " .. notename(options.thenote.value)
   end
 
   local function changespd()
@@ -534,7 +534,7 @@ function create_gui()
       vb.views.start_button.text = "Start"
       vb.views.progress_text.text = ""
       if options.restoreonstop.value == true then
-  restorerightnow()
+        restorerightnow()
       end
       process:stop()
     end
@@ -752,7 +752,7 @@ function create_gui()
             },
             vb:text {
               id = "pitch_text",
-              text = "Note: " .. notename(options.thenote.value)
+              text = "Base Note: " .. notename(options.thenote.value)
             }
           }
         }
@@ -760,7 +760,7 @@ function create_gui()
     }
   }
  }  
- dialog = renoise.app():show_custom_dialog("ModLoop v0.25", dialog_content)
+ dialog = renoise.app():show_custom_dialog("ModLoop v0.26", dialog_content)
  return {start_stop_process=start_stop_process, dialog=dialog, restorerightnow=restorerightnow}
 end
 
@@ -775,16 +775,20 @@ function broom_car_timer()
   end
 end
 
-if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.25") == false then
+if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.26") == false then
   renoise.tool():add_menu_entry{
-    name = "Main Menu:Tools:ModLoop v0.25",
+    name = "Main Menu:Tools:ModLoop v0.26",
     invoke = function()
       if gui == nil then 
         init_tool()
         if (nosample == false) then
           gui = create_gui()
-          renoise.tool().app_release_document_observable:add_notifier(gui.start_stop_process)
-          renoise.tool():add_timer(broom_car_timer,50) 
+          if renoise.tool().app_release_document_observable:has_notifier(gui.start_stop_process) == false then
+            renoise.tool().app_release_document_observable:add_notifier(gui.start_stop_process)
+          end
+          if renoise.tool():has_timer(broom_car_timer) == false then
+            renoise.tool():add_timer(broom_car_timer,50) 
+          end
         end
       end
     end
@@ -797,7 +801,9 @@ renoise.tool():add_midi_mapping{
   name = "ModLoop:ToggleStart",
   invoke = function(midi_message)
     if midi_message.int_value == 127 or midi_message.int_value == 0 then
-      gui.start_stop_process()
+      if gui ~= nil then
+        gui.start_stop_process()
+      end
     end
   end
 }
@@ -806,7 +812,9 @@ renoise.tool():add_midi_mapping{
   name = "ModLoop:Restore",
   invoke = function(midi_message)
     if midi_message.int_value == 127 or midi_message.int_value == 0 then
-      gui.restorerightnow()
+      if gui ~= nil then 
+        gui.restorerightnow()
+      end 
     end
   end
 }
