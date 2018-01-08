@@ -170,6 +170,7 @@ gui = nil
 direction = nil
 nosample = true
 restoring = false
+working = false
 
 function main(update_progress_func)
   local s = nil
@@ -353,25 +354,31 @@ end
 
 function init_tool()
   nosample = true
-  rsong = renoise.song()
-  selected_sample = rsong.selected_sample
-  if (rsong.selected_sample ~= nil) then
-    nosample = false
-    originalstartpos = selected_sample.loop_start
-    originalendpos = selected_sample.loop_end
-    originalloopmode = selected_sample.loop_mode  
-    startpos = selected_sample.loop_start
-    endpos = selected_sample.loop_end
-    sample_rate = selected_sample.sample_buffer.sample_rate
-    lastsample = rsong.selected_sample_index
-    lastinstrument = rsong.selected_instrument_index
-    lastframe = selected_sample.sample_buffer.number_of_frames
-    originallastframe = lastframe
-    if options.maxspeed.value > (lastframe / 2) then
-      options.maxspeed.value = lastframe / 2
-    end  
-    if options.minframes.value > lastframe then
-      options.minframes.value = lastframe
+  if (renoise.song() ~= nil) then
+    rsong = renoise.song()
+    if (rsong ~= nil) then
+      selected_sample = rsong.selected_sample
+      if (rsong.selected_sample ~= nil) then
+        if (rsong.selected_sample.sample_buffer.has_sample_data == true) then
+          nosample = false
+          originalstartpos = selected_sample.loop_start
+          originalendpos = selected_sample.loop_end
+          originalloopmode = selected_sample.loop_mode  
+          startpos = selected_sample.loop_start
+          endpos = selected_sample.loop_end
+          sample_rate = selected_sample.sample_buffer.sample_rate
+          lastsample = rsong.selected_sample_index
+          lastinstrument = rsong.selected_instrument_index
+          lastframe = selected_sample.sample_buffer.number_of_frames
+          originallastframe = lastframe
+          if options.maxspeed.value > (lastframe / 2) then
+            options.maxspeed.value = lastframe / 2
+          end  
+          if options.minframes.value > lastframe then
+            options.minframes.value = lastframe
+          end
+        end 
+      end
     end
   end
 end
@@ -386,7 +393,12 @@ function close_tool()
       end  
     end
   end
-  gui = nil
+end
+
+function close_doc()
+  if working == true then
+    gui.start_stop_process()
+  end
 end
 
 function create_gui()
@@ -518,18 +530,22 @@ function create_gui()
 
   local function start_stop_process(self)
     if (not process or not process:running()) then
-      vb.views.start_button.text = "Stop"
-      init_tool()
-      if nosample == false then
-        process = ProcessSlicer(main, update_progress)
-        process:start()
-      else
-        vb.views.start_button.text = "Start"
-        vb.views.progress_text.text = ""
-  if options.restoreonstop.value == true then
-    restorerightnow()
-  end
-      end 
+      if (renoise.song() ~= nil) then
+        vb.views.start_button.text = "Stop"
+        init_tool()
+        if nosample == false then
+          process = ProcessSlicer(main, update_progress)
+          process:start()
+          working = true
+        else
+          vb.views.start_button.text = "Start"
+          vb.views.progress_text.text = ""
+          if options.restoreonstop.value == true then
+            restorerightnow()
+          end
+          working = false
+        end 
+      end
     elseif (process and process:running()) then
       vb.views.start_button.text = "Start"
       vb.views.progress_text.text = ""
@@ -537,6 +553,7 @@ function create_gui()
         restorerightnow()
       end
       process:stop()
+      working = false
     end
   end
 
@@ -760,35 +777,43 @@ function create_gui()
     }
   }
  }  
- dialog = renoise.app():show_custom_dialog("ModLoop v0.26", dialog_content)
+ dialog = renoise.app():show_custom_dialog("ModLoop v0.27", dialog_content)
  return {start_stop_process=start_stop_process, dialog=dialog, restorerightnow=restorerightnow}
 end
 
 renoise.tool().preferences = options
 
 function broom_car_timer()
-  if (not gui.dialog or not gui.dialog.visible) then    
-    close_tool()
-    if renoise.tool():has_timer(broom_car_timer) then
-      renoise.tool():remove_timer(broom_car_timer)
+  if (renoise.song() ~= nil) then
+    if (not gui.dialog or not gui.dialog.visible) then    
+      if renoise.tool():has_timer(broom_car_timer) then
+        renoise.tool():remove_timer(broom_car_timer)
+      end
+      if renoise.tool().app_release_document_observable:has_notifier(gui.start_stop_process) then
+        renoise.tool().app_release_document_observable:remove_notifier(gui.start_stop_process)
+      end
+      close_tool()
+      gui = nil
     end
   end
 end
 
-if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.26") == false then
+if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.27") == false then
   renoise.tool():add_menu_entry{
-    name = "Main Menu:Tools:ModLoop v0.26",
+    name = "Main Menu:Tools:ModLoop v0.27",
     invoke = function()
-      if gui == nil then 
-        init_tool()
-        if (nosample == false) then
-          gui = create_gui()
-          if renoise.tool().app_release_document_observable:has_notifier(gui.start_stop_process) == false then
-            renoise.tool().app_release_document_observable:add_notifier(gui.start_stop_process)
-          end
-          if renoise.tool():has_timer(broom_car_timer) == false then
-            renoise.tool():add_timer(broom_car_timer,50) 
-          end
+      if renoise.song() ~= nil then 
+        if gui == nil then 
+          init_tool()
+          if (nosample == false) then
+            gui = create_gui()
+            if renoise.tool().app_release_document_observable:has_notifier(close_doc) == false then
+              renoise.tool().app_release_document_observable:add_notifier(close_doc)
+            end
+            if renoise.tool():has_timer(broom_car_timer) == false then
+              renoise.tool():add_timer(broom_car_timer,50) 
+            end
+          end  
         end
       end
     end

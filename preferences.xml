@@ -4,10 +4,10 @@
   <returntopitch>false</returntopitch>
   <startenable>true</startenable>
   <thenote>36</thenote>
-  <speed>179.06553599999995</speed>
+  <speed>102.17359999999996</speed>
   <restoreonswitch>true</restoreonswitch>
   <endspd>65.751104000000012</endspd>
-  <maxspeed>505.86800000000005</maxspeed>
+  <maxspeed>379.13999999999982</maxspeed>
   <modetype>2</modetype>
   <restoreonclose>true</restoreonclose>
   <collisiontype>3</collisiontype>
