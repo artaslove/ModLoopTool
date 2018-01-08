@@ -399,6 +399,7 @@ function close_doc()
   if working == true then
     gui.start_stop_process()
   end
+  init_tool()
 end
 
 function create_gui()
