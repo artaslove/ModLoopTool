@@ -8,9 +8,10 @@ This is an experiment to modify sample loop positions by bonafide@martica.org
 portions of this code for handling notes and frequencies, although slightly modified are from:
 https://github.com/MightyPirates/OpenComputers/blob/master-MC1.7.10/src/main/resources/assets/opencomputers/loot/openos/lib/note.lua
 
-V0.28
+v0.29
 
 To Do:
+  - jump mode
   - restore on new instrument / new sample (with the timer, because that action can be outside the main loop)
   - additional modes of operation (expand mode? shrink mode?)
     - expand until at beginning and end, then stop?
@@ -236,27 +237,31 @@ function main(update_progress_func)
         selected_sample.loop_end = math.floor(endpos + 0.5)
       end
       if options.collisiontype.value > 0 then -- bounce1
-        if endpos > lastframe then  -- we've reached the end
+        if endpos >= lastframe then  -- we've reached the end
           endpos = lastframe
-          eflip = true
-          if (endpos + (options.endspd.value * -1) < (startpos + options.startspd.value)) then
+          if options.endspd.value > 0 then
+            eflip = true
+          end
+          if (endpos + (options.endspd.value * -1) < (startpos + options.startspd.value + options.minframes.value)) then
             startpos = (endpos + options.endspd.value * -1) - options.minframes.value
             if options.startspd.value > 0 then
               sflip = true
             end
           end  
         end
-        if startpos < 1  then -- we've reached the beginning
+        if startpos <= 1  then -- we've reached the beginning
           startpos = 1
-          sflip = true
-          if (startpos + (options.startspd.value * -1) > (endpos + options.endspd.value)) then
+          if options.startspd.value < 0 then
+            sflip = true
+          end
+          if (startpos + (options.startspd.value * -1) > (endpos + options.endspd.value - options.minframes.value)) then
             endpos = (startpos + options.startspd.value * -1) + options.minframes.value
             if options.endspd.value < 0 then
               eflip = true
             end
           end  
         end
-        if (endpos - startpos) < options.minframes.value then  -- we've reached the midpoint 
+        if (endpos - startpos) < options.minframes.value then  -- we've reached some midpoint 
           if options.returntopitch.value == true then -- switch to pitch mode option
             options.modetype.value = 2
             options.returntopitch.value = false -- maybe should be an option to toggle, yet switching to loose mode won't work sometimes
@@ -295,6 +300,7 @@ function main(update_progress_func)
           eflip = false      
         end
       end
+      --print (string.format("startpos: %d, startspd: %d, endpos: %d, endspd: %d", startpos, options.startspd.value, endpos, options.endspd.value))
       if options.startenable.value == true then
         startpos = startpos + options.startspd.value
       else
@@ -768,7 +774,7 @@ function create_gui()
     }
   }
  }  
- dialog = renoise.app():show_custom_dialog("ModLoop v0.28", dialog_content)
+ dialog = renoise.app():show_custom_dialog("ModLoop v0.29", dialog_content)
  return {start_stop_process=start_stop_process, dialog=dialog, restorerightnow=restorerightnow}
 end
 
@@ -776,6 +782,7 @@ renoise.tool().preferences = options
 
 function broom_car_timer()
   if (renoise.song() ~= nil) then
+  
     if (not gui.dialog or not gui.dialog.visible) then    
       if renoise.tool():has_timer(broom_car_timer) then
         renoise.tool():remove_timer(broom_car_timer)
@@ -789,9 +796,9 @@ function broom_car_timer()
   end
 end
 
-if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.28") == false then
+if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.29") == false then
   renoise.tool():add_menu_entry{
-    name = "Main Menu:Tools:ModLoop v0.28",
+    name = "Main Menu:Tools:ModLoop v0.29",
     invoke = function()
       if renoise.song() ~= nil then 
         if gui == nil then 
