@@ -17,7 +17,6 @@ To Do:
     - expand until at beginning and end, then stop?
     - shrink until minframes, then stop or pitch mode if selected?
   - fix or provide more options for the collision behavior
-    - maybe this isn't really broken after all? 
   - glide option and speed for pitch mode
   - finer control over pitch mode (octaves, cents) 
   - bitmaps and prettier gui in general 
@@ -224,7 +223,7 @@ function main(update_progress_func)
     -- 2 - pitch   - the start and end points move together in order to create a pitch
     -- 3 - ?????
     --
-    -- I suspect I can handle the edges even better in loose mode. 
+    -- I suspect I can handle the edges **even better** in loose mode, we have to look ahead a bit...  
   
     if (options.modetype.value == 1) then -- loose
       if options.returntopitch.value == true then
@@ -254,12 +253,12 @@ function main(update_progress_func)
           if options.startspd.value < 0 then
             sflip = true
           end
-          if (startpos + (options.startspd.value * -1) > (endpos + options.endspd.value - options.minframes.value)) then
-            endpos = (startpos + options.startspd.value * -1) + options.minframes.value
+          if (startpos + options.minframes.value + (options.startspd.value * -1) > (endpos + options.endspd.value)) then
+            endpos = startpos + (options.startspd.value * -1) + options.minframes.value
             if options.endspd.value < 0 then
               eflip = true
             end
-          end  
+          end
         end
         if (endpos - startpos) < options.minframes.value then  -- we've reached some midpoint 
           if options.returntopitch.value == true then -- switch to pitch mode option
