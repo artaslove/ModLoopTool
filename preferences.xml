@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ScriptingToolPreferences doc_version="0">
-  <startspd>-31.375552000000003</startspd>
+  <startspd>-144.00060799999986</startspd>
   <returntopitch>false</returntopitch>
   <startenable>true</startenable>
   <thenote>36</thenote>
-  <speed>256.86271999999985</speed>
+  <speed>5.1137600000000898</speed>
   <restoreonswitch>true</restoreonswitch>
-  <endspd>65.751104000000012</endspd>
-  <maxspeed>379.13999999999982</maxspeed>
-  <modetype>2</modetype>
+  <endspd>15.307999999999936</endspd>
+  <maxspeed>487.4719999999997</maxspeed>
+  <modetype>1.0</modetype>
   <restoreonclose>true</restoreonclose>
   <collisiontype>3</collisiontype>
   <minframepitch>false</minframepitch>
@@ -17,5 +17,5 @@
   <restoresample>true</restoresample>
   <endenable>true</endenable>
   <maxmaxspeed>512</maxmaxspeed>
-  <minframes>674.24603477616029</minframes>
+  <minframes>60.146034776160533</minframes>
 </ScriptingToolPreferences>

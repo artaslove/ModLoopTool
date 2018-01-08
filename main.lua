@@ -173,9 +173,6 @@ restoring = false
 working = false
 
 function main(update_progress_func)
-  local s = nil
-  local e = nil
-
   while true do
    if (gui ~= nil and rsong.selected_sample ~= nil) then 
     if (not gui.dialog or not gui.dialog.visible) then    
@@ -196,15 +193,9 @@ function main(update_progress_func)
       --  rsong.instruments[lastinstrument]:sample(lastsample).loop_end = originalendpos
       --  rsong.instruments[lastinstrument]:sample(lastsample).loop_mode = originalloopmode
       --end
-      selected_sample = rsong.selected_sample
-      originalstartpos = selected_sample.loop_start
-      originalendpos = selected_sample.loop_end
-      originalloopmode = selected_sample.loop_mode
-      startpos = selected_sample.loop_start
-      endpos = selected_sample.loop_end
-      sample_rate = selected_sample.sample_buffer.sample_rate
-      lastsample = rsong.selected_sample_index
-      lastinstrument = rsong.selected_instrument_index
+      if (rsong.selected_sample.sample_buffer.has_sample_data) then
+        init_sample()
+      end
     end  
     lastframe = selected_sample.sample_buffer.number_of_frames
     if lastframe ~= originallastframe then -- user is adding or deleting sample content
@@ -231,6 +222,8 @@ function main(update_progress_func)
     -- 1 - loose   - the start and end points move back and forth with unique speeds
     -- 2 - pitch   - the start and end points move together in order to create a pitch
     -- 3 - ?????
+    --
+    -- I suspect I can handle the edges even better in loose mode. 
   
     if (options.modetype.value == 1) then -- loose
       if options.returntopitch.value == true then
@@ -264,17 +257,9 @@ function main(update_progress_func)
           end  
         end
         if (endpos - startpos) < options.minframes.value then  -- we've reached the midpoint 
-          --if options.collisiontype.value == 2 then -- bounce 2 -- this is broken please do not use
-          --   s = options.startspd.value 
-          --   e = options.endspd.value
-          --   if startpos + e < endpos + s and endpos + s > startpos + e then
-          --     options.startspd.value = e
-          --     options.endspd.value = s
-          --   end
-          --end
-          if options.returntopitch.value == true then -- switch to pitch mode
+          if options.returntopitch.value == true then -- switch to pitch mode option
             options.modetype.value = 2
-            options.returntopitch.value = false
+            options.returntopitch.value = false -- maybe should be an option to toggle, yet switching to loose mode won't work sometimes
           end
           if startpos + options.minframes.value <= lastframe then
             endpos = startpos + options.minframes.value
@@ -352,6 +337,26 @@ function main(update_progress_func)
   gui.start_stop_process()
 end
 
+function init_sample()
+  selected_sample = rsong.selected_sample
+  originalstartpos = selected_sample.loop_start
+  originalendpos = selected_sample.loop_end
+  originalloopmode = selected_sample.loop_mode
+  startpos = selected_sample.loop_start
+  endpos = selected_sample.loop_end
+  sample_rate = selected_sample.sample_buffer.sample_rate
+  lastsample = rsong.selected_sample_index
+  lastinstrument = rsong.selected_instrument_index
+  lastframe = selected_sample.sample_buffer.number_of_frames
+  originallastframe = lastframe
+  if options.maxspeed.value > (lastframe / 2) then
+    options.maxspeed.value = lastframe / 2
+  end  
+  if options.minframes.value > lastframe then
+    options.minframes.value = lastframe
+  end
+end
+
 function init_tool()
   nosample = true
   if (renoise.song() ~= nil) then
@@ -359,24 +364,9 @@ function init_tool()
     if (rsong ~= nil) then
       selected_sample = rsong.selected_sample
       if (rsong.selected_sample ~= nil) then
-        if (rsong.selected_sample.sample_buffer.has_sample_data == true) then
+        if (rsong.selected_sample.sample_buffer.has_sample_data) then
           nosample = false
-          originalstartpos = selected_sample.loop_start
-          originalendpos = selected_sample.loop_end
-          originalloopmode = selected_sample.loop_mode  
-          startpos = selected_sample.loop_start
-          endpos = selected_sample.loop_end
-          sample_rate = selected_sample.sample_buffer.sample_rate
-          lastsample = rsong.selected_sample_index
-          lastinstrument = rsong.selected_instrument_index
-          lastframe = selected_sample.sample_buffer.number_of_frames
-          originallastframe = lastframe
-          if options.maxspeed.value > (lastframe / 2) then
-            options.maxspeed.value = lastframe / 2
-          end  
-          if options.minframes.value > lastframe then
-            options.minframes.value = lastframe
-          end
+          init_sample()
         end 
       end
     end
@@ -778,7 +768,7 @@ function create_gui()
     }
   }
  }  
- dialog = renoise.app():show_custom_dialog("ModLoop v0.27", dialog_content)
+ dialog = renoise.app():show_custom_dialog("ModLoop v0.28", dialog_content)
  return {start_stop_process=start_stop_process, dialog=dialog, restorerightnow=restorerightnow}
 end
 
@@ -799,9 +789,9 @@ function broom_car_timer()
   end
 end
 
-if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.27") == false then
+if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.28") == false then
   renoise.tool():add_menu_entry{
-    name = "Main Menu:Tools:ModLoop v0.27",
+    name = "Main Menu:Tools:ModLoop v0.28",
     invoke = function()
       if renoise.song() ~= nil then 
         if gui == nil then 
