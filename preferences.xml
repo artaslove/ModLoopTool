@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ScriptingToolPreferences doc_version="0">
-  <startspd>-144.00060799999986</startspd>
+  <startspd>-108.06153496774192</startspd>
   <returntopitch>false</returntopitch>
   <startenable>true</startenable>
   <thenote>36</thenote>
-  <speed>5.1137600000000898</speed>
+  <speed>-422.17385493838799</speed>
   <restoreonswitch>true</restoreonswitch>
-  <endspd>15.307999999999936</endspd>
+  <endspd>30.907104000000473</endspd>
   <maxspeed>487.4719999999997</maxspeed>
-  <modetype>1.0</modetype>
+  <modetype>2</modetype>
   <restoreonclose>true</restoreonclose>
   <collisiontype>3</collisiontype>
   <minframepitch>false</minframepitch>

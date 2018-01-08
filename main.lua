@@ -8,7 +8,7 @@ This is an experiment to modify sample loop positions by bonafide@martica.org
 portions of this code for handling notes and frequencies, although slightly modified are from:
 https://github.com/MightyPirates/OpenComputers/blob/master-MC1.7.10/src/main/resources/assets/opencomputers/loot/openos/lib/note.lua
 
-V0.26
+V0.28
 
 To Do:
   - restore on new instrument / new sample (with the timer, because that action can be outside the main loop)
