@@ -8,28 +8,13 @@ This is an experiment to modify sample loop positions by bonafide@martica.org
 portions of this code for handling notes and frequencies, although slightly modified are from:
 https://github.com/MightyPirates/OpenComputers/blob/master-MC1.7.10/src/main/resources/assets/opencomputers/loot/openos/lib/note.lua
 
-v0.29
+v0.30
 
 To Do:
-  - jump mode
-  - restore on new instrument / new sample (with the timer, because that action can be outside the main loop)
-  - additional modes of operation (expand mode? shrink mode?)
-    - expand until at beginning and end, then stop?
-    - shrink until minframes, then stop or pitch mode if selected?
-  - fix or provide more options for the collision behavior
   - glide option and speed for pitch mode
   - finer control over pitch mode (octaves, cents) 
   - bitmaps and prettier gui in general 
   - ???
-
-Eventually:
-  - retrieve the notes being played with the selected sample if possible, which would enable:
-    - representation in the GUI of the actual note(s)
-    - not exceeding playback speed
-    - fixing the pitch change with high speeds
-    - random mode
-    - figuring out how much of the sample buffer we need to check to find a zero crossing
-    - leverage the unused FHK effects parameters by reading the sequence?
 
 ]]
 
@@ -142,7 +127,7 @@ local options = renoise.Document.create("ScriptingToolPreferences") {
   returntopitch = false,
   restoreonclose = true,
   restoreonstop = false,
-  restoreonswitch = true
+  restoreonswitch = true,
 }
 
 originalstartpos = nil
@@ -170,7 +155,9 @@ gui = nil
 direction = nil
 nosample = true
 restoring = false
+finishjump = false
 working = false
+tmpvalue = nil
 
 function main(update_progress_func)
   while true do
@@ -178,9 +165,6 @@ function main(update_progress_func)
     if (not gui.dialog or not gui.dialog.visible) then    
       break    
     end
-    --if (rsong.transport.playing == true) then -- maybe we can use an effects column, FHK seem to be free
-    --  print (rsong.selected_effect_column.number_string)
-    --end
     if restoring == true and lastsample == rsong.selected_sample_index and lastinstrument == rsong.selected_instrument_index then
       startpos = originalstartpos
       endpos = originalendpos
@@ -188,11 +172,6 @@ function main(update_progress_func)
       restoring = false
     end 
     if (lastsample ~= rsong.selected_sample_index) or (lastinstrument ~= rsong.selected_instrument_index) then 
-      --if options.restoreonswitch.value == true then -- broken... I have to work this into the timer as it has to check outside the main loop
-      --  rsong.instruments[lastinstrument]:sample(lastsample).loop_start = originalstartpos
-      --  rsong.instruments[lastinstrument]:sample(lastsample).loop_end = originalendpos
-      --  rsong.instruments[lastinstrument]:sample(lastsample).loop_mode = originalloopmode
-      --end
       if (rsong.selected_sample.sample_buffer.has_sample_data) then
         init_sample()
       end
@@ -223,7 +202,6 @@ function main(update_progress_func)
     -- 2 - pitch   - the start and end points move together in order to create a pitch
     -- 3 - ?????
     --
-    -- I suspect I can handle the edges **even better** in loose mode, we have to look ahead a bit...  
   
     if (options.modetype.value == 1) then -- loose
       if options.returntopitch.value == true then
@@ -246,6 +224,9 @@ function main(update_progress_func)
             if options.startspd.value > 0 then
               sflip = true
             end
+            if (options.startspd.value < options.endspd.value) then
+              vflip = true
+            end
           end  
         end
         if startpos <= 1  then -- we've reached the beginning
@@ -257,6 +238,9 @@ function main(update_progress_func)
             endpos = startpos + (options.startspd.value * -1) + options.minframes.value
             if options.endspd.value < 0 then
               eflip = true
+            end
+            if (options.startspd.value > options.endspd.value) then
+              vflip = true
             end
           end
         end
@@ -297,6 +281,12 @@ function main(update_progress_func)
         if (eflip == true) then
           options.endspd.value = options.endspd.value * -1
           eflip = false      
+        end
+        if (vflip == true) then
+          tmpvalue = options.startspd.value
+          options.startspd.value = options.endspd.value
+          options.endspd.value = tmpvalue
+          vflip = false
         end
       end
       --print (string.format("startpos: %d, startspd: %d, endpos: %d, endspd: %d", startpos, options.startspd.value, endpos, options.endspd.value))
@@ -773,7 +763,7 @@ function create_gui()
     }
   }
  }  
- dialog = renoise.app():show_custom_dialog("ModLoop v0.29", dialog_content)
+ dialog = renoise.app():show_custom_dialog("ModLoop v0.30", dialog_content)
  return {start_stop_process=start_stop_process, dialog=dialog, restorerightnow=restorerightnow}
 end
 
@@ -795,9 +785,9 @@ function broom_car_timer()
   end
 end
 
-if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.29") == false then
+if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.30") == false then
   renoise.tool():add_menu_entry{
-    name = "Main Menu:Tools:ModLoop v0.29",
+    name = "Main Menu:Tools:ModLoop v0.30",
     invoke = function()
       if renoise.song() ~= nil then 
         if gui == nil then 
