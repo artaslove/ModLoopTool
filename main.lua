@@ -8,7 +8,7 @@ This is an experiment to modify sample loop positions by bonafide@martica.org
 portions of this code for handling notes and frequencies, although slightly modified are from:
 https://github.com/MightyPirates/OpenComputers/blob/master-MC1.7.10/src/main/resources/assets/opencomputers/loot/openos/lib/note.lua
 
-v0.30
+v0.31
 
 To Do:
   - glide option and speed for pitch mode
@@ -304,7 +304,7 @@ function main(update_progress_func)
       end
     end
     if (options.modetype.value == 2) then -- pitch
-      if (startpos > 0) and ((startpos + targetframes) < lastframe) then
+      if (startpos > 0.5) and ((startpos + targetframes) < lastframe) then
         selected_sample.loop_start = math.floor(startpos + 0.5)
         selected_sample.loop_end = math.floor(startpos + targetframes + 0.5)
       end
@@ -321,7 +321,7 @@ function main(update_progress_func)
         vflip = false      
       end
       startpos = startpos + options.speed.value
-      endpos = startpos + options.speed.value + targetframes 
+      endpos = startpos + options.speed.value + targetframes
     end   
     update_progress_func()
     coroutine.yield()
@@ -329,7 +329,9 @@ function main(update_progress_func)
      break
    end 
   end
-  gui.start_stop_process()
+  if (gui ~= nil) then
+    gui.start_stop_process()
+  end 
 end
 
 function init_sample()
@@ -763,7 +765,7 @@ function create_gui()
     }
   }
  }  
- dialog = renoise.app():show_custom_dialog("ModLoop v0.30", dialog_content)
+ dialog = renoise.app():show_custom_dialog("ModLoop v0.31", dialog_content)
  return {start_stop_process=start_stop_process, dialog=dialog, restorerightnow=restorerightnow}
 end
 
@@ -785,9 +787,9 @@ function broom_car_timer()
   end
 end
 
-if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.30") == false then
+if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.31") == false then
   renoise.tool():add_menu_entry{
-    name = "Main Menu:Tools:ModLoop v0.30",
+    name = "Main Menu:Tools:ModLoop v0.31",
     invoke = function()
       if renoise.song() ~= nil then 
         if gui == nil then 

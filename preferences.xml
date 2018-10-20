@@ -3,11 +3,11 @@
   <startspd>-300.72460800000027</startspd>
   <returntopitch>false</returntopitch>
   <startenable>true</startenable>
-  <thenote>36</thenote>
-  <speed>85.538976000000176</speed>
+  <thenote>60</thenote>
+  <speed>2.9747318293838485</speed>
   <restoreonswitch>true</restoreonswitch>
   <endspd>252.85566898924742</endspd>
-  <maxspeed>499.73600000000022</maxspeed>
+  <maxspeed>512</maxspeed>
   <modetype>2</modetype>
   <restoreonclose>true</restoreonclose>
   <collisiontype>3</collisiontype>
