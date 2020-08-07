@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<RenoiseScriptingTool>
-  <ApiVersion>5.0</ApiVersion>
-  <Version>0.31</Version>
+<RenoiseScriptingTool doc_version="0">
+  <ApiVersion>6</ApiVersion>
+  <AutoUpgraded>true</AutoUpgraded>
   <Id>ca.tonyscc.ModLoop</Id>
+  <Version>0.32</Version>
   <Author>artaslove [bonafide@martica.org]</Author>
-  <Category>Tool</Category>
   <Name>ModLoop</Name>
+  <Category>Tool</Category>
   <Description>ModLoop Tool</Description>
 </RenoiseScriptingTool>

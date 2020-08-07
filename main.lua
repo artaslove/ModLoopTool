@@ -8,7 +8,7 @@ This is an experiment to modify sample loop positions by bonafide@martica.org
 portions of this code for handling notes and frequencies, although slightly modified are from:
 https://github.com/MightyPirates/OpenComputers/blob/master-MC1.7.10/src/main/resources/assets/opencomputers/loot/openos/lib/note.lua
 
-v0.31
+v0.32
 
 To Do:
   - glide option and speed for pitch mode
@@ -765,7 +765,7 @@ function create_gui()
     }
   }
  }  
- dialog = renoise.app():show_custom_dialog("ModLoop v0.31", dialog_content)
+ dialog = renoise.app():show_custom_dialog("ModLoop v0.32", dialog_content)
  return {start_stop_process=start_stop_process, dialog=dialog, restorerightnow=restorerightnow}
 end
 
@@ -787,9 +787,9 @@ function broom_car_timer()
   end
 end
 
-if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.31") == false then
+if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.32") == false then
   renoise.tool():add_menu_entry{
-    name = "Main Menu:Tools:ModLoop v0.31",
+    name = "Main Menu:Tools:ModLoop v0.32",
     invoke = function()
       if renoise.song() ~= nil then 
         if gui == nil then 
@@ -881,14 +881,14 @@ renoise.tool():add_midi_mapping{
 renoise.tool():add_midi_mapping{
   name = "ModLoop:MinFrames",
   invoke = function(midi_message)
-    options.minframes.value =  (options.maxminframes.value / 128) * midi_message.int_value
+    options.minframes.value =  (options.maxminframes.value / 128) * (midi_message.int_value + 1)
   end
 }
 
 renoise.tool():add_midi_mapping{
   name = "ModLoop:Maxspeed",
   invoke = function(midi_message)
-    options.maxspeed.value = (options.maxmaxspeed.value / 128) * midi_message.int_value
+    options.maxspeed.value = (options.maxmaxspeed.value / 128) * (midi_message.int_value + 1)
   end
 }
 
