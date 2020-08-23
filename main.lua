@@ -130,6 +130,45 @@ local options = renoise.Document.create("ScriptingToolPreferences") {
   restoreonswitch = true,
 }
 
+--sliders can end up with incorrect values, as per fugue
+
+if options.maxspeed.value < 1 then
+  options.maxspeed.value = 1
+end
+if options.maxspeed.value > options.maxmaxspeed.value then
+  options.maxspeed.value = options.maxmaxspeed.value
+end
+if options.minframes.value < 1 then
+  options.minframes.value = 1
+end
+if options.minframes.value > options.maxminframes.value then
+  options.minframes.value = options.maxminframes.value
+end
+if options.startspd.value < (options.maxspeed.value * -1) then
+  options.startspd.value = (options.maxspeed.value * -1)
+end
+if options.startspd.value > options.maxspeed.value then
+  options.startspd.value = options.maxspeed.value
+end
+if options.endspd.value < (options.maxspeed.value * -1) then
+  options.endspd.value = (options.maxspeed.value * -1)
+end
+if options.endspd.value > options.maxspeed.value then
+  options.endspd.value = options.maxspeed.value
+end
+if options.speed.value < (options.maxspeed.value * -1) then
+  options.speed.value = (options.maxspeed.value * -1)
+end
+if options.speed.value > options.maxspeed.value then
+  options.speed.value = options.maxspeed.value
+end
+if options.thenote.value < 21 then
+  options.thenote.value = 21
+end
+if options.thenote.value > 107 then
+  options.thenote.value = 107
+end
+
 originalstartpos = nil
 startpos = nil
 originalendpos = nil
@@ -770,44 +809,6 @@ function create_gui()
 end
 
 renoise.tool().preferences = options
---sliders can end up with incorrect values, as per fugue
-
-if options.maxspeed.value < 1 then
-  options.maxspeed.value = 1
-end
-if options.maxspeed.value > options.maxmaxspeed.value then
-  options.maxspeed.value = options.maxmaxspeed.value
-end
-if options.minframes.value < 1 then
-  options.minframes.value = 1
-end
-if options.minframes.value > options.maxminframes.value then
-  options.minframes.value = options.maxminframes.value
-end
-if options.startspd.value < (options.maxspeed.value * -1) then
-  options.startspd.value = (options.maxspeed.value * -1)
-end
-if options.startspd.value > options.maxspeed.value then
-  options.startspd.value = options.maxspeed.value
-end
-if options.endspd.value < (options.maxspeed.value * -1) then
-  options.endspd.value = (options.maxspeed.value * -1)
-end
-if options.endspd.value > options.maxspeed.value then
-  options.endspd.value = options.maxspeed.value
-end
-if options.speed.value < (options.maxspeed.value * -1) then
-  options.speed.value = (options.maxspeed.value * -1)
-end
-if options.speed.value > options.maxspeed.value then
-  options.speed.value = options.maxspeed.value
-end
-if options.thenote.value < 21 then
-  options.thenote.value = 21
-end
-if options.thenote.value > 107 then
-  options.thenote.value = 107
-end
 
 function broom_car_timer()
   if (renoise.song() ~= nil) then
