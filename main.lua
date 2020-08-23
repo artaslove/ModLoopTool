@@ -8,7 +8,7 @@ This is an experiment to modify sample loop positions by bonafide@martica.org
 portions of this code for handling notes and frequencies, although slightly modified are from:
 https://github.com/MightyPirates/OpenComputers/blob/master-MC1.7.10/src/main/resources/assets/opencomputers/loot/openos/lib/note.lua
 
-v0.32
+v0.33
 
 To Do:
   - glide option and speed for pitch mode
@@ -605,7 +605,7 @@ function create_gui()
               },
               vb:text {
                 id = "rclose_label",
-                text = "Restore loop proprties on close"
+                text = "Restore loop properties on close"
               }
             },  
             vb:row {
@@ -616,7 +616,7 @@ function create_gui()
               },
               vb:text {
                 id = "rstop_label",
-                text = "Restore loop proprties on stop"
+                text = "Restore loop properties on stop"
               }
             },  
             vb:button {
@@ -765,11 +765,49 @@ function create_gui()
     }
   }
  }  
- dialog = renoise.app():show_custom_dialog("ModLoop v0.32", dialog_content)
+ dialog = renoise.app():show_custom_dialog("ModLoop v0.33", dialog_content)
  return {start_stop_process=start_stop_process, dialog=dialog, restorerightnow=restorerightnow}
 end
 
 renoise.tool().preferences = options
+--sliders can end up with incorrect values, as per fugue
+
+if options.maxspeed.value < 1 then
+  options.maxspeed.value = 1
+end
+if options.maxspeed.value > options.maxmaxspeed.value then
+  options.maxspeed.value = options.maxmaxspeed.value
+end
+if options.minframes.value < 1 then
+  options.minframes.value = 1
+end
+if options.minframes.value > options.maxminframes.value then
+  options.minframes.value = options.maxminframes.value
+end
+if options.startspd.value < (options.maxspeed.value * -1) then
+  options.startspd.value = (options.maxspeed.value * -1)
+end
+if options.startspd.value > options.maxspeed.value then
+  options.startspd.value = options.maxspeed.value
+end
+if options.endspd.value < (options.maxspeed.value * -1) then
+  options.endspd.value = (options.maxspeed.value * -1)
+end
+if options.endspd.value > options.maxspeed.value then
+  options.endspd.value = options.maxspeed.value
+end
+if options.speed.value < (options.maxspeed.value * -1) then
+  options.speed.value = (options.maxspeed.value * -1)
+end
+if options.speed.value > options.maxspeed.value then
+  options.speed.value = options.maxspeed.value
+end
+if options.thenote.value < 21 then
+  options.thenote.value = 21
+end
+if options.thenote.value > 107 then
+  options.thenote.value = 107
+end
 
 function broom_car_timer()
   if (renoise.song() ~= nil) then
@@ -787,9 +825,9 @@ function broom_car_timer()
   end
 end
 
-if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.32") == false then
+if renoise.tool():has_menu_entry("Main Menu:Tools:ModLoop v0.33") == false then
   renoise.tool():add_menu_entry{
-    name = "Main Menu:Tools:ModLoop v0.32",
+    name = "Main Menu:Tools:ModLoop v0.33",
     invoke = function()
       if renoise.song() ~= nil then 
         if gui == nil then 

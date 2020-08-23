@@ -3,7 +3,7 @@
   <ApiVersion>6</ApiVersion>
   <AutoUpgraded>true</AutoUpgraded>
   <Id>ca.tonyscc.ModLoop</Id>
-  <Version>0.32</Version>
+  <Version>0.33</Version>
   <Author>artaslove [bonafide@martica.org]</Author>
   <Name>ModLoop</Name>
   <Category>Tool</Category>
