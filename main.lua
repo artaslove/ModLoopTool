@@ -4,7 +4,7 @@ main.lua
 
 --[[
 
-This is an experiment to modify sample loop positions by bonafide@martica.org
+This is an experiment to modify sample loop positions by tonyscomputerconsulting@gmail.com
 portions of this code for handling notes and frequencies, although slightly modified are from:
 https://github.com/MightyPirates/OpenComputers/blob/master-MC1.7.10/src/main/resources/assets/opencomputers/loot/openos/lib/note.lua
 
